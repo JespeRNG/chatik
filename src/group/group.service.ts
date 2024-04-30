@@ -38,29 +38,4 @@ export class GroupService {
     const group = await this.findGroup(id);
     return this.groupRepository.update(group.id, updateGroupDto);
   }
-
-  /* public async updateGroup(
-    updateGroupDto: UpdateGroupDto,
-  ): Promise<GroupEntity> {
-    if (
-      updateGroupDto.participantIdToAdd ||
-      updateGroupDto.participantIdToRemove
-    ) {
-      const createParticipantDto = new CreateParticipantDto();
-      createParticipantDto.groupId = updateGroupDto.id;
-
-      if (updateGroupDto.participantIdToAdd) {
-        createParticipantDto.userId = updateGroupDto.participantIdToAdd;
-        updateGroupDto.participantIdToAdd = (
-          await this.participantService.create(createParticipantDto)
-        ).id;
-      } else {
-        createParticipantDto.userId = updateGroupDto.participantIdToRemove;
-        updateGroupDto.participantIdToRemove = (
-          await this.participantService.remove(createParticipantDto)
-        ).id;
-      }
-    }
-    return this.groupRepository.update(updateGroupDto);
-  } */
 }
