@@ -28,7 +28,6 @@ export class UserService {
 
   public async findUserById(userId: string): Promise<UserEntity> {
     const user = await this.userRepository.findById(userId);
-
     if (!user) throw new NotFoundException('User not found.');
 
     return user;
@@ -36,16 +35,10 @@ export class UserService {
 
   public async findByUsername(username: string): Promise<UserEntity> {
     const user = await this.userRepository.findByUsername(username);
-
     if (!user) throw new NotFoundException('User not found.');
 
     return user;
   }
-
-  /* async updateUser(userId: number, updateUserDto: UpdateUserDto) {
-    const user = await this.findUserById(userId);
-    return this.userRepository.update(userId, updateUserDto);
-  } */
 
   public async removeUser(userId: string): Promise<UserEntity> {
     const { id } = await this.findUserById(userId);
