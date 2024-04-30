@@ -1,23 +1,25 @@
-import { User } from '.prisma/client';
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  public findAll(): Promise<UserEntity[]> {
+    return this.prisma.user.findMany({ include: { participant: true } });
   }
 
-  async findById(id: number): Promise<UserEntity | null> {
+  public findByUsername(username: string): Promise<UserEntity | null> {
+    return this.prisma.user.findFirst({ where: { username } });
+  }
+
+  public findById(id: string): Promise<UserEntity | null> {
     return this.prisma.user.findFirst({ where: { id } });
   }
 
-  async create(user: CreateUserDto): Promise<UserEntity> {
+  public create(user: CreateUserDto): Promise<UserEntity> {
     return this.prisma.user.create({ data: user });
   }
 
@@ -31,7 +33,7 @@ export class UserRepository {
     })
   } */
 
-  async delete(id: number): Promise<UserEntity> {
+  public delete(id: string): Promise<UserEntity> {
     return this.prisma.user.delete({ where: { id } });
   }
 }

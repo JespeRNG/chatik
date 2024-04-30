@@ -1,4 +1,4 @@
-import { AppModule } from './app.module';
+import { AppModule } from './app/app.module';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';

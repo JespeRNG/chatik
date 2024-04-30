@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["selectRelationCount"]
 }
 
 datasource db {
@@ -11,8 +9,35 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id           String        @id @default(uuid())
+  username     String        @unique
+  password     String
+  createdAt    DateTime      @default(now())
+  createdChats Group[]
+  participant  Participant[]
+
+  @@map("users")
+}
+
+model Group {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  picture      String?
+  creator      User          @relation(fields: [creatorId], references: [id])
+  creatorId    String
+  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  participants Participant[]
+
+  @@map("groups")
+}
+
+model Participant {
+  id      String @id @default(uuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id])
+
+  @@map("participants")
 }

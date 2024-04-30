@@ -1,33 +1,41 @@
 import { UserRepository } from './user.repository';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 export const roundsOfHashing = 10;
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+  public async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
     const hashedPassword = await bcrypt.hash(
       createUserDto.password,
       roundsOfHashing,
     );
 
-    createUserDto.password = hashedPassword;
-
-    return this.userRepository.create(createUserDto);
+    return this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
   }
 
-  async findAllUsers() {
+  public findAllUsers(): Promise<UserEntity[]> {
     return this.userRepository.findAll();
   }
 
-  async findUserById(userId: number) {
+  public async findUserById(userId: string): Promise<UserEntity> {
     const user = await this.userRepository.findById(userId);
+
+    if (!user) throw new NotFoundException('User not found.');
+
+    return user;
+  }
+
+  public async findByUsername(username: string): Promise<UserEntity> {
+    const user = await this.userRepository.findByUsername(username);
 
     if (!user) throw new NotFoundException('User not found.');
 
@@ -39,8 +47,8 @@ export class UsersService {
     return this.userRepository.update(userId, updateUserDto);
   } */
 
-  async removeUser(userId: number) {
-    const user = await this.findUserById(userId);
-    return this.userRepository.delete(userId);
+  public async removeUser(userId: string): Promise<UserEntity> {
+    const { id } = await this.findUserById(userId);
+    return this.userRepository.delete(id);
   }
 }
