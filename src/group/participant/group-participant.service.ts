@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
+import { USER_NOT_FOUND_EXCEPTION } from 'src/constants/constants';
 import { GroupParticipantRepository } from './group-participant.repository';
 import { GroupParticipantEntity } from './entities/group-participant.entity';
 
@@ -58,7 +59,7 @@ export class GroupParticipantService {
   private async validateParticipant(groupId: string, userId: string) {
     const user = await this.userService.findUserById(userId);
     if (!user) {
-      throw new NotFoundException('User not found.');
+      throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
     }
 
     const group = await this.groupService.findGroup(groupId);

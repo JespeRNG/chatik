@@ -23,16 +23,6 @@ export class UserRepository {
     return this.prisma.user.create({ data: user });
   }
 
-  /* async update(id: number, userData: UpdateUserDto): Promise<UserEntity> {
-    return this.prisma.user.update({
-      where: { id },
-      data: {
-        ...UpdateUserDto,
-        updatedAt: new Date(),
-      }
-    })
-  } */
-
   public delete(id: string): Promise<UserEntity> {
     return this.prisma.user.delete({ where: { id } });
   }

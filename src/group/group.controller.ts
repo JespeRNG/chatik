@@ -37,7 +37,10 @@ export class GroupController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({ type: GroupEntity })
-  public async create(@Body() createGroupDto: CreateGroupDto, @Request() req) {
+  public async createGroup(
+    @Body() createGroupDto: CreateGroupDto,
+    @Request() req,
+  ) {
     createGroupDto.creatorId = req.user.id;
     return this.groupService.create(createGroupDto);
   }
@@ -45,7 +48,7 @@ export class GroupController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: GroupEntity, isArray: true })
-  public async findAll() {
+  public async getGroups() {
     return this.groupService.findAll();
   }
 
@@ -53,7 +56,7 @@ export class GroupController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: GroupEntity })
-  public async findOne(@Param('id', ParseIntPipe) id: string) {
+  public async getGroup(@Param('id', ParseIntPipe) id: string) {
     return this.groupService.findGroup(id);
   }
 
@@ -61,7 +64,7 @@ export class GroupController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: GroupEntity })
-  public async remove(@Param('id') id: string) {
+  public async deleteGroup(@Param('id') id: string) {
     return this.groupService.remove(id);
   }
 
@@ -69,7 +72,7 @@ export class GroupController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiCreatedResponse({ type: GroupEntity })
-  public async update(
+  public async updateGroup(
     @Param('id') id: string,
     @Body() updateGroupDto: UpdateGroupDto,
   ) {

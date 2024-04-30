@@ -25,7 +25,7 @@ export class UserController {
 
   @Post()
   @ApiCreatedResponse({ type: UserEntity })
-  public async create(@Body() createUserDto: CreateUserDto) {
+  public async createUser(@Body() createUserDto: CreateUserDto) {
     return new UserEntity(await this.userService.createUser(createUserDto));
   }
 
@@ -33,7 +33,7 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: UserEntity, isArray: true })
-  public async findAll() {
+  public async getUsers() {
     const users = await this.userService.findAllUsers();
     return users.map((user) => new UserEntity(user));
   }
@@ -42,21 +42,15 @@ export class UserController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: UserEntity })
-  public async findOne(@Param('id') userId: string) {
+  public async getUser(@Param('id') userId: string) {
     return new UserEntity(await this.userService.findUserById(userId));
   }
-
-  /* @Patch(':id')
-    @ApiCreatedResponse({ type: UserEntity })
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.updateUser(+id, updateUserDto);
-  } */
 
   @Delete(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOkResponse({ type: UserEntity })
-  public async remove(@Param('id') id: string) {
+  public async deleteUser(@Param('id') id: string) {
     return new UserEntity(await this.userService.removeUser(id));
   }
 }
