@@ -2,7 +2,11 @@ import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { USER_NOT_FOUND_EXCEPTION } from 'src/constants/constants';
 
 export const roundsOfHashing = 10;
@@ -12,6 +16,11 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   public async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+    const user = await this.userRepository.findByUsername(
+      createUserDto.username,
+    );
+    if (user) throw new ConflictException('User already exists.');
+
     const hashedPassword = await bcrypt.hash(
       createUserDto.password,
       roundsOfHashing,
