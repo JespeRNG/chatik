@@ -13,6 +13,7 @@ model User {
   username     String        @unique
   password     String
   createdAt    DateTime      @default(now())
+  refreshToken String?
   createdChats Group[]
   participant  Participant[]
 

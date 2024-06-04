@@ -23,12 +23,6 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  @ApiCreatedResponse({ type: UserEntity })
-  public async createUser(@Body() createUserDto: CreateUserDto) {
-    return new UserEntity(await this.userService.createUser(createUserDto));
-  }
-
   @Get()
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)

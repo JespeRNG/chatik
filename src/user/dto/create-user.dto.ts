@@ -14,4 +14,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty()
   password: string;
+
+  refreshToken: string;
 }
