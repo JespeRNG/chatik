@@ -13,7 +13,7 @@ import {
 import * as argon2 from 'argon2';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { AuthEntity } from './entity/auth.entity';
+import { Token } from './interfaces/token-payload';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
@@ -24,7 +24,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  public async signUp(createUserDto: CreateUserDto): Promise<AuthEntity> {
+  public async signUp(createUserDto: CreateUserDto): Promise<Token> {
     const userExists = await this.userService.findByUsername(
       createUserDto.username,
     );
@@ -42,12 +42,12 @@ export class AuthService {
       password: hashedPassword,
     });
     const tokens = await this.getTokens(newUser.id, newUser.username);
-    await this.updateRefreshToken(newUser.id, tokens.refreshToken);
+    await this.updateRefreshToken(newUser.id, tokens.refresh_token);
 
     return tokens;
   }
 
-  public async signIn(username: string, password: string): Promise<AuthEntity> {
+  public async signIn(username: string, password: string): Promise<Token> {
     const user = await this.userService.findByUsername(username);
     if (!user) {
       throw new NotFoundException(`No user found for username: ${username}`);
@@ -59,7 +59,7 @@ export class AuthService {
     }
 
     const tokens = await this.getTokens(user.id, user.username);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
   }
 
@@ -70,7 +70,10 @@ export class AuthService {
     });
   }
 
-  public async refreshTokens(userId: string, refreshToken: string) {
+  public async refreshTokens(
+    userId: string,
+    refreshToken: string,
+  ): Promise<Token> {
     const user = await this.userService.findUserById(userId);
     if (!user || !user.refreshToken)
       throw new ForbiddenException('Access Denied');
@@ -81,12 +84,12 @@ export class AuthService {
     );
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
     const tokens = await this.getTokens(user.id, user.username);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
+    await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
   }
 
-  private async getTokens(userId: string, username: string) {
-    const [accessToken, refreshToken] = await Promise.all([
+  private async getTokens(userId: string, username: string): Promise<Token> {
+    const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         {
           sub: userId,
@@ -110,8 +113,8 @@ export class AuthService {
     ]);
 
     return {
-      accessToken,
-      refreshToken,
+      access_token,
+      refresh_token,
     };
   }
 }
