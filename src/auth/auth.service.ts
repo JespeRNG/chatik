@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -14,14 +15,12 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { AuthEntity } from './entity/auth.entity';
 import { UserService } from 'src/user/user.service';
-import { PrismaService } from './../prisma/prisma.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
-    private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
 
@@ -49,9 +48,7 @@ export class AuthService {
   }
 
   public async signIn(username: string, password: string): Promise<AuthEntity> {
-    const user = await this.prisma.user.findUnique({
-      where: { username: username },
-    });
+    const user = await this.userService.findByUsername(username);
     if (!user) {
       throw new NotFoundException(`No user found for username: ${username}`);
     }
@@ -71,6 +68,21 @@ export class AuthService {
     await this.userService.updateUser(userId, {
       refreshToken: hashedRefreshToken,
     });
+  }
+
+  public async refreshTokens(userId: string, refreshToken: string) {
+    const user = await this.userService.findUserById(userId);
+    if (!user || !user.refreshToken)
+      throw new ForbiddenException('Access Denied');
+
+    const refreshTokenMatches = await argon2.verify(
+      user.refreshToken,
+      refreshToken,
+    );
+    if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+    const tokens = await this.getTokens(user.id, user.username);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+    return tokens;
   }
 
   private async getTokens(userId: string, username: string) {

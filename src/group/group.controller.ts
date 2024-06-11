@@ -19,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { CreateGroupDto } from './dto/create-group.dto';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { GroupEntity } from './entities/group.entity';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupParticipantService } from './participant/group-participant.service';
@@ -35,7 +35,7 @@ export class GroupController {
 
   @Post()
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiCreatedResponse({ type: GroupEntity })
   public async createGroup(
     @Body() createGroupDto: CreateGroupDto,
@@ -46,7 +46,7 @@ export class GroupController {
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({ type: GroupEntity, isArray: true })
   public async getGroups() {
     return this.groupService.findAll();
@@ -54,7 +54,7 @@ export class GroupController {
 
   @Get(':id')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({ type: GroupEntity })
   public async getGroup(@Param('id', ParseIntPipe) id: string) {
     return this.groupService.findGroup(id);
@@ -62,7 +62,7 @@ export class GroupController {
 
   @Delete(':id')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({ type: GroupEntity })
   public async deleteGroup(@Param('id') id: string) {
     return this.groupService.remove(id);
@@ -70,7 +70,7 @@ export class GroupController {
 
   @Patch(':id')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiCreatedResponse({ type: GroupEntity })
   public async updateGroup(
     @Param('id') id: string,
@@ -85,7 +85,7 @@ export class GroupController {
 
   @Post(':groupId/participant/:userId')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiCreatedResponse({ type: GroupEntity })
   public addParticipantToGroup(
     @Param('groupId') groupId: string,
@@ -96,7 +96,7 @@ export class GroupController {
 
   @Delete(':groupId/participant/:userId')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiCreatedResponse({ type: GroupEntity })
   public removeParticipantFromGroup(
     @Param('groupId') groupId: string,
