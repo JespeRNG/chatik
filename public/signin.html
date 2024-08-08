@@ -79,7 +79,7 @@
         </div>
       </form>
       <div class="footer">
-        <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+        <p>Don't have an account? <a href="/signup">Sign up</a></p>
       </div>
     </div>
     <script>
@@ -91,10 +91,7 @@
           const username = document.getElementById('username').value;
           const password = document.getElementById('password').value;
 
-          console.log('username => ', username);
-          console.log('password => ', password);
-
-          fetch('/auth/login', {
+          fetch('/auth/signin', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -108,10 +105,9 @@
               return response.json();
             })
             .then((data) => {
-              if (data.accessToken) {
-                localStorage.setItem('accessToken', data.accessToken);
-
-                window.location.href = '/home.html';
+              if (data.access_token) {
+                localStorage.setItem('accessToken', data.access_token);
+                window.location.href = '/home';
               } else {
                 throw new Error('No access token returned.');
               }

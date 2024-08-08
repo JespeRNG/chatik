@@ -83,7 +83,7 @@
         </div>
       </form>
       <div class="footer">
-        <p>Already have an account? <a href="signin.html">Sign in</a></p>
+        <p>Already have an account? <a href="/signin">Sign in</a></p>
       </div>
     </div>
     <script>
@@ -99,11 +99,7 @@
           if (password !== repassword) {
             throw new Error('Passwords mismatch.');
           } else {
-            console.log('username => ', username);
-            console.log('password => ', password);
-            console.log('repassword => ', repassword);
-
-            fetch('/users', {
+            fetch('/auth/signup', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -113,7 +109,7 @@
               if (!response.ok) {
                 throw new Error('Failed to sign up.');
               }
-              window.location.href = '/signin.html';
+              window.location.href = '/signin';
               return response.json();
             });
           }

@@ -16,12 +16,14 @@ import { JwtService } from '@nestjs/jwt';
 import { Token } from './interfaces/token-payload';
 import { UserService } from 'src/user/user.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { RedisService } from 'src/redis/redis.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private redisService: RedisService,
   ) {}
 
   public async signUp(createUserDto: CreateUserDto): Promise<Token> {
@@ -60,6 +62,10 @@ export class AuthService {
 
     const tokens = await this.getTokens(user.id, user.username);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
+
+    await this.redisService.saveToken(user.id, tokens.access_token);
+    const token = await this.redisService.getToken(user.id);
+
     return tokens;
   }
 
