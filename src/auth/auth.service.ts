@@ -7,7 +7,9 @@ import {
 } from '@nestjs/common';
 import {
   JWT_ACCESS_SECRET,
+  ACCESS_TOKEN_EXPIRY,
   JWT_REFRESH_SECRET,
+  REFRESH_TOKEN_EXPIRY,
   ROUNDS_OF_HASHING,
 } from 'src/constants/constants';
 import * as argon2 from 'argon2';
@@ -15,8 +17,8 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Token } from './interfaces/token-payload';
 import { UserService } from 'src/user/user.service';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { RedisService } from 'src/redis/redis.service';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -69,6 +71,10 @@ export class AuthService {
     return tokens;
   }
 
+  public async logout(userId: string) {
+    await this.redisService.removeToken(userId);
+  }
+
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await argon2.hash(refreshToken);
     await this.userService.updateUser(userId, {
@@ -89,6 +95,7 @@ export class AuthService {
       refreshToken,
     );
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+
     const tokens = await this.getTokens(user.id, user.username);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
     return tokens;
@@ -103,7 +110,7 @@ export class AuthService {
         },
         {
           secret: JWT_ACCESS_SECRET,
-          expiresIn: '15m',
+          expiresIn: '5s', //ACCESS_TOKEN_EXPIRY, //30m
         },
       ),
       this.jwtService.signAsync(
@@ -113,7 +120,7 @@ export class AuthService {
         },
         {
           secret: JWT_REFRESH_SECRET,
-          expiresIn: '7d',
+          expiresIn: REFRESH_TOKEN_EXPIRY, //7d
         },
       ),
     ]);

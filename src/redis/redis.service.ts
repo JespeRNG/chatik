@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisRepository } from './repository/redis.repository';
 
-const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
-const TEN_MINUTES_IN_SECONDS = 60 * 10;
+// const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
+// const TEN_MINUTES_IN_SECONDS = 60 * 10;
 
 @Injectable()
 export class RedisService {
@@ -10,11 +10,20 @@ export class RedisService {
     @Inject(RedisRepository) private readonly redisRepository: RedisRepository,
   ) {}
   public async saveToken(userId: string, access_token: string) {
-    await this.redisRepository.set('access_token', userId, access_token);
+    await this.redisRepository.setWithExpiry(
+      'access_token',
+      userId,
+      access_token,
+      1800, //30 minutes
+    );
   }
 
   public async getToken(userId: string) {
     return await this.redisRepository.get('access_token', userId);
+  }
+
+  public async removeToken(userId: string) {
+    await this.redisRepository.delete('access_token', userId);
   }
   /* public async saveProduct(
     productId: string,

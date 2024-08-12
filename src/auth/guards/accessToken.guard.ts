@@ -1,5 +1,5 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
 @Injectable()
 export class AccessTokenGuard extends AuthGuard('jwt') {

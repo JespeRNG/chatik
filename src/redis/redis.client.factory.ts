@@ -1,6 +1,8 @@
-import { FactoryProvider } from '@nestjs/common';
 import { Redis } from 'ioredis';
+import * as dotenv from 'dotenv';
+import { FactoryProvider } from '@nestjs/common';
 
+dotenv.config();
 export const redisClientFactory: FactoryProvider<Redis> = {
   provide: 'RedisClient',
   useFactory: () => {

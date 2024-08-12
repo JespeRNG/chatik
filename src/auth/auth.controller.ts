@@ -2,9 +2,10 @@ import { Request } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { AuthEntity } from './entity/auth.entity';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 
 @ApiTags('auth')
@@ -24,7 +25,16 @@ export class AuthController {
     return this.authService.signIn(username, password);
   }
 
+  @Post('logout')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
+  public logout(@Req() req: Request) {
+    this.authService.logout(req.user['sub']);
+    return { message: 'Logged out successfully.' };
+  }
+
   @Get('refresh')
+  @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
   public refreshTokens(@Req() req: Request) {
     const userId = req.user['sub'];
