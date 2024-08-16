@@ -57,7 +57,7 @@
         if (password !== repassword) {
           throw new Error('Passwords mismatch.');
         } else {
-          fetch('/auth/signup', {
+          fetch('api/auth/signup', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

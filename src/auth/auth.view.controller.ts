@@ -1,6 +1,17 @@
+import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { Body, Controller, Get, Post, Render, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+  Render,
+  Req,
+  Res,
+} from '@nestjs/common';
+import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
 @Controller()
 export class AuthViewController {
@@ -24,11 +35,20 @@ export class AuthViewController {
     return;
   }
 
-  @Post('login')
-  public async login(
-    @Body() loginDto: { username: string; password: string },
+  @Post('signup')
+  public async signup(
+    @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
   ) {
+    const tokens = await this.authService.signUp(createUserDto);
+    if (!tokens) {
+      throw new ConflictException();
+    }
+    return res.redirect('signin');
+  }
+
+  @Post('login')
+  public async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     const tokens = await this.authService.signIn(
       loginDto.username,
       loginDto.password,
