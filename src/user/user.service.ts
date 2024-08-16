@@ -35,7 +35,6 @@ export class UserService {
 
   public async findByUsername(username: string): Promise<UserEntity> {
     const user = await this.userRepository.findByUsername(username);
-
     return user;
   }
 

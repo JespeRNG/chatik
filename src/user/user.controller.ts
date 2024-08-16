@@ -1,12 +1,13 @@
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { Controller, Get, Param, Delete, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserEntity } from './entities/user.entity';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Delete, UseGuards } from '@nestjs/common';
 
-@ApiTags('users')
-@Controller('users')
-export class UserController {
+@ApiBearerAuth()
+@ApiTags('api/users')
+@Controller('api/users')
+export class UserApiController {
   constructor(private readonly userService: UserService) {}
 
   @Get()

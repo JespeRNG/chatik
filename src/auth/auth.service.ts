@@ -66,8 +66,6 @@ export class AuthService {
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
     await this.redisService.saveToken(user.id, tokens.access_token);
-    const token = await this.redisService.getToken(user.id);
-
     return tokens;
   }
 

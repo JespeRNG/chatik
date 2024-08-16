@@ -1,14 +1,16 @@
 import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
   ApiTags,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiCreatedResponse,
+  ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import {
   Controller,
   Get,
   Post,
   Body,
+  Res,
   Param,
   Delete,
   Request,
@@ -16,22 +18,33 @@ import {
   ParseIntPipe,
   Patch,
   BadRequestException,
+  Render,
 } from '@nestjs/common';
 import { GroupService } from './group.service';
-import { CreateGroupDto } from './dto/create-group.dto';
-import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { GroupEntity } from './entities/group.entity';
+import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { GroupParticipantService } from './participant/group-participant.service';
 
-@ApiTags('groups')
 @ApiBearerAuth()
-@Controller('groups')
-export class GroupController {
+@ApiTags('api/groups')
+@Controller('api/groups')
+export class GroupApiController {
   constructor(
     private readonly groupService: GroupService,
     private readonly groupParticipantService: GroupParticipantService,
   ) {}
+
+  //#region MVC
+  @Get('groups')
+  @ApiOkResponse({ description: 'The page was successfully opened' })
+  @Render('groups/groups')
+  @ApiExcludeEndpoint()
+  public groupsPage() {
+    return;
+  }
+  //#endregion
 
   @Post()
   @ApiBearerAuth()

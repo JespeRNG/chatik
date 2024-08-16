@@ -8,9 +8,9 @@ import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 
-@ApiTags('auth')
-@Controller('auth')
-export class AuthController {
+@ApiTags('api/auth')
+@Controller('api/auth')
+export class AuthApiController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')

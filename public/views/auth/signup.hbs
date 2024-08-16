@@ -1,0 +1,76 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Chatik | Sign up</title>
+    <style>
+      body { margin: 0; padding: 0; font-family: Arial, sans-serif;
+      background-color: #503c6c; display: flex; justify-content: center;
+      align-items: center; height: 100vh; } .login-container { background-color:
+      #fff; padding: 35px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0,
+      0, 0.3); text-align: center; } .login-container h1 { margin-bottom: 20px;
+      color: #6a0dad; } .form-group { margin-bottom: 20px; } .form-group label {
+      display: block; margin-bottom: 5px; color: #333; } .form-group
+      input[type='text'], .form-group input[type='password'] { width: 90%;
+      padding: 10px; border-radius: 5px; border: 1px solid #ccc; } .form-group
+      button { padding: 12px 50px; background-color: #6a0dad; color: #fff;
+      border: none; border-radius: 20px; cursor: pointer; transition:
+      background-color 0.3s ease; } .form-group button:hover { background-color:
+      #49057f; }
+    </style>
+  </head>
+  <body>
+    <div class='login-container'>
+      <h1>Sign up</h1>
+      <form id='signupForm'>
+        <div class='form-group'>
+          <label for='username'>Username:</label>
+          <input type='text' id='username' name='username' required />
+        </div>
+        <div class='form-group'>
+          <label for='password'>Password:</label>
+          <input type='password' id='password' name='password' required />
+        </div>
+        <div class='form-group'>
+          <label for='password'>Confirm password:</label>
+          <input type='password' id='repassword' name='password' required />
+        </div>
+        <div class='form-group'>
+          <button type='submit'>Sign up</button>
+        </div>
+      </form>
+      <div class='footer'>
+        <p>Already have an account? <a href='/signin'>Sign in</a></p>
+      </div>
+    </div>
+  </body>
+  <script>
+    document
+      .getElementById('signupForm')
+      .addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const repassword = document.getElementById('repassword').value;
+
+        if (password !== repassword) {
+          throw new Error('Passwords mismatch.');
+        } else {
+          fetch('/auth/signup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+          }).then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to sign up.');
+            }
+            window.location.href = '/signin';
+            return response.json();
+          });
+        }
+      });
+  </script>
+</html>
