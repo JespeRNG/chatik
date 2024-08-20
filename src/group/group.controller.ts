@@ -65,6 +65,14 @@ export class GroupApiController {
     return this.groupService.findAll();
   }
 
+  @Get('/related')
+  @UseGuards(AccessTokenGuard)
+  @ApiOkResponse({ type: GroupEntity, isArray: true })
+  public async getRelatedGroups(@Request() req) {
+    const userId = req.user['sub'];
+    return await this.groupService.findRelated(userId);
+  }
+
   @Get(':id')
   @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)

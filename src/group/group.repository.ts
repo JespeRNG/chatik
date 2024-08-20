@@ -48,6 +48,25 @@ export class GroupRepository {
     });
   }
 
+  public findRelated(userId: string): Promise<GroupEntity[] | null> {
+    return this.prisma.group.findMany({
+      where: {
+        OR: [
+          {
+            creatorId: userId,
+          },
+          {
+            participants: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+        ],
+      },
+    });
+  }
+
   public update(
     id: string,
     updateGroupDto: UpdateGroupDto,

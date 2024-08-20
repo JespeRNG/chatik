@@ -1,12 +1,20 @@
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
 import { GroupRepository } from './group.repository';
 import { GroupEntity } from './entities/group.entity';
-import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateGroupDto } from './dto/create-group.dto';
 
 @Injectable()
 export class GroupService {
-  constructor(private readonly groupRepository: GroupRepository) {}
+  constructor(
+    private readonly groupRepository: GroupRepository,
+    private readonly userService: UserService,
+  ) {}
 
   public create(
     createGroupDto: CreateGroupDto,
@@ -20,6 +28,15 @@ export class GroupService {
     if (!groups) throw new NotFoundException('Groups not found.');
 
     return groups;
+  }
+
+  public async findRelated(userId: string): Promise<GroupEntity[] | null> {
+    const user = await this.userService.findUserById(userId);
+    if (!user) {
+      throw new ConflictException('There is no user with such id');
+    }
+
+    return await this.groupRepository.findRelated(userId);
   }
 
   public async findGroup(id: string): Promise<GroupEntity> {

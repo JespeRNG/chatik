@@ -4,15 +4,12 @@ const socket = io('localhost:3001/menu', {
 });
 
 socket.on('connect', () => {
-  //console.log('connected');
-  socket.emit('getAllGroups');
+  socket.emit('getRelatedGroups', { userId: 'user-id' });
 });
 
 socket.on('sendGroups', (groups) => {
   $('.timeline').empty();
-  //console.log(groups);
   groups.forEach((el) => {
-    //console.log(el);
     $('.timeline').append(`
       <div class='timeline-item'>
         <div class='timeline-item-content'>

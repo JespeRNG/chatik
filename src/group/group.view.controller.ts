@@ -8,7 +8,7 @@ export class GroupViewController {
   @Get('/')
   @UseGuards(AuthGuard)
   @Render('groups/groups-menu')
-  public signupPage() {
+  public groupsMenuPage() {
     return;
   }
 }

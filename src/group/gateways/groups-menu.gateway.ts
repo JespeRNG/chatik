@@ -1,22 +1,26 @@
 import {
   ConnectedSocket,
-  OnGatewayConnection,
+  WebSocketServer,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
+  OnGatewayConnection,
 } from '@nestjs/websockets';
+import { UseGuards } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { GroupService } from '../group.service';
+import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 
+@UseGuards(SocketAuthGuard)
 @WebSocketGateway(3001, {
   namespace: '/menu',
   handlePreflightRequest: (req, res) => {
     res.writeHead(200, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': false,
+      'Access-Control-Allow-Credentials': true,
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
       'Access-Control-Allow-Headers': 'Authorization',
     });
+    res.end();
   },
 })
 export class GroupsMenuGateway implements OnGatewayConnection {
@@ -27,18 +31,14 @@ export class GroupsMenuGateway implements OnGatewayConnection {
     const sockets = this.server.sockets;
 
     console.log(
-      `Client was conencted. Client id: ${client.id}.\nAmount of clients: ${sockets.size}`,
+      `Client was connected. Client id: ${client.id}.\nAmount of clients: ${sockets.size}`,
     );
   }
 
-  @SubscribeMessage('getAllGroups')
-  public async getAllGroups(@ConnectedSocket() socket: Socket) {
-    const groups = await this.groupService.findAll();
+  @SubscribeMessage('getRelatedGroups')
+  public async getRelatedGroups(@ConnectedSocket() socket: Socket) {
+    const userId = socket.user.sub;
+    const groups = await this.groupService.findRelated(userId);
     socket.emit('sendGroups', groups);
   }
-
-  /* @SubscribeMessage('hihi')
-  public async hihi(@ConnectedSocket() socket: Socket) {
-    socket.emit('getMsg', 'hihihihi');
-  } */
 }
