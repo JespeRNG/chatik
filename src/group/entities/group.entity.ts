@@ -19,7 +19,4 @@ export class GroupEntity implements Group {
 
   @ApiProperty()
   createdAt: Date;
-
-  /* @ApiProperty()
-  participants: UserEntity[]; */
 }

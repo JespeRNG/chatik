@@ -22,6 +22,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: `http://${process.env.APP_HOST}:${process.env.APP_PORT}`,
+    methods: ['GET', 'POST'],
     credentials: true,
   });
 

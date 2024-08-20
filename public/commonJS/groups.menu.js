@@ -1,0 +1,44 @@
+const socket = io('localhost:3001/menu', {
+  withCredentials: true,
+  transports: ['websocket', 'polling'],
+});
+
+socket.on('connect', () => {
+  //console.log('connected');
+  socket.emit('getAllGroups');
+});
+
+socket.on('sendGroups', (groups) => {
+  $('.timeline').empty();
+  //console.log(groups);
+  groups.forEach((el) => {
+    //console.log(el);
+    $('.timeline').append(`
+      <div class='timeline-item'>
+        <div class='timeline-item-content'>
+          <div class='timeline-item-content-image'></div>
+          <div class='timeline-item-content-text'>
+            <div class='timeline-item-content-header'>
+              <p class='timeline-item-content-text-sender'>Sender</p>
+              <p class='timeline-item-content-text-date'>
+                12 Jan 2023, 4:32 pm
+              </p>
+            </div>
+            <p class='timeline-item-content-text-message'>
+              This is a message
+            </p>
+            <p class='timeline-item-content-text-group-name'>
+              ${el.name}
+            </p>
+            <p class='timeline-item-content-text-content-author'>
+              With Author & Viewers
+            </p>
+          </div>
+        </div>
+      </div>
+    `);
+  });
+  $('.timeline').append(`
+    <a href='#' class='timeline-item-content-text-loadmore'>Load more</a>  
+  `);
+});

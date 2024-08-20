@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Allow, IsOptional, MaxLength, MinLength } from 'class-validator';
+import { IsOptional, MaxLength, MinLength } from 'class-validator';
 
 export class UpdateGroupDto {
   @MaxLength(16)
