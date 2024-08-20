@@ -65,12 +65,16 @@ export class AuthService {
     const tokens = await this.getTokens(user.id, user.username);
     await this.updateRefreshToken(user.id, tokens.refresh_token);
 
-    await this.redisService.saveToken(user.id, tokens.access_token);
+    await this.redisService.saveTokens(
+      user.id,
+      tokens.access_token,
+      tokens.refresh_token,
+    );
     return tokens;
   }
 
   public async logout(userId: string) {
-    await this.redisService.removeToken(userId);
+    await this.redisService.removeAccessToken(userId);
   }
 
   private async updateRefreshToken(userId: string, refreshToken: string) {

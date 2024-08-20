@@ -38,7 +38,7 @@ export class SocketAuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    const tokenInRedis = await this.redisService.getToken(user.sub);
+    const tokenInRedis = await this.redisService.getAccessToken(user.sub);
     if (!tokenInRedis) {
       throw new UnauthorizedException();
     }

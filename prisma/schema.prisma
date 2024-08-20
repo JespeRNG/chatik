@@ -16,6 +16,7 @@ model User {
   refreshToken String?
   createdChats Group[]
   participant  Participant[]
+  Message      Message[]
 
   @@map("users")
 }
@@ -29,6 +30,7 @@ model Group {
   updatedAt    DateTime      @updatedAt
   createdAt    DateTime      @default(now())
   participants Participant[]
+  Message      Message[]
 
   @@map("groups")
 }
@@ -41,4 +43,16 @@ model Participant {
   group   Group  @relation(fields: [groupId], references: [id])
 
   @@map("participants")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id])
+
+  @@map("messages")
 }

@@ -26,6 +26,7 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { GroupParticipantService } from './participant/group-participant.service';
+import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @ApiBearerAuth()
 @ApiTags('api/groups')
@@ -59,7 +60,7 @@ export class GroupApiController {
   }
 
   @Get()
-  @UseGuards(AccessTokenGuard)
+  @UseGuards(AuthGuard)
   @ApiOkResponse({ type: GroupEntity, isArray: true })
   public async getGroups() {
     return this.groupService.findAll();

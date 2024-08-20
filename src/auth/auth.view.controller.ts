@@ -62,6 +62,10 @@ export class AuthViewController {
       httpOnly: true,
       maxAge: 1800000, // 30 minutes in milliseconds
     });
+    res.cookie('refresh_token', tokens.refresh_token, {
+      httpOnly: true,
+      maxAge: 604800000, // 7 days in milliseconds
+    });
     return res.redirect('/');
   }
 }
