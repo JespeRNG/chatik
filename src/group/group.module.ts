@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { GroupService } from './group.service';
 import { UserModule } from 'src/user/user.module';
 import { GroupRepository } from './group.repository';
@@ -6,9 +7,9 @@ import { RedisModule } from 'src/redis/redis.module';
 import { GroupApiController } from './group.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { GroupViewController } from './group.view.controller';
+import { GroupsMenuGateway } from './gateways/groups-menu.gateway';
 import { GroupParticipantService } from './participant/group-participant.service';
 import { GroupParticipantRepository } from './participant/group-participant.repository';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   controllers: [GroupApiController, GroupViewController],
@@ -17,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
     GroupRepository,
     GroupParticipantRepository,
     GroupParticipantService,
+    GroupsMenuGateway,
   ],
   imports: [PrismaModule, UserModule, RedisModule, JwtModule],
 })

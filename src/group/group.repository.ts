@@ -8,14 +8,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class GroupRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  public create(groupDto: CreateGroupDto): Promise<GroupEntity> {
+  public create(
+    groupDto: CreateGroupDto,
+    creatorId: string,
+  ): Promise<GroupEntity> {
     return this.prisma.group.create({
       data: {
         name: groupDto.name,
         picture: groupDto.picturePath,
         creator: {
           connect: {
-            id: groupDto.creatorId,
+            id: creatorId,
           },
         },
       },

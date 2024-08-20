@@ -8,8 +8,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 export class GroupService {
   constructor(private readonly groupRepository: GroupRepository) {}
 
-  public create(createGroupDto: CreateGroupDto): Promise<GroupEntity> {
-    return this.groupRepository.create(createGroupDto);
+  public create(
+    createGroupDto: CreateGroupDto,
+    creatorId: string,
+  ): Promise<GroupEntity> {
+    return this.groupRepository.create(createGroupDto, creatorId);
   }
 
   public async findAll(): Promise<GroupEntity[]> {

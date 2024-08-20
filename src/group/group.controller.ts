@@ -54,8 +54,8 @@ export class GroupApiController {
     @Body() createGroupDto: CreateGroupDto,
     @Request() req,
   ) {
-    createGroupDto.creatorId = req.user.id;
-    return this.groupService.create(createGroupDto);
+    const creatorId = req.user.sub;
+    return this.groupService.create(createGroupDto, creatorId);
   }
 
   @Get()

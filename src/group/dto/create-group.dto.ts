@@ -18,9 +18,4 @@ export class CreateGroupDto {
   @IsString()
   @ApiProperty({ description: 'Group picture path to file.' })
   picturePath: string;
-
-  @IsUUID()
-  @IsString()
-  @ApiProperty({ description: 'Id of group creator.' })
-  creatorId: string;
 }
