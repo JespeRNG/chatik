@@ -8,6 +8,7 @@ import { GroupRepository } from './group.repository';
 import { GroupEntity } from './entities/group.entity';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 
 @Injectable()
 export class GroupService {
@@ -20,6 +21,7 @@ export class GroupService {
     createGroupDto: CreateGroupDto,
     creatorId: string,
   ): Promise<GroupEntity> {
+    createGroupDto.pictureName = `${GROUP_PICTURE_DEFAULT_PATH}/${createGroupDto.pictureName}`;
     return this.groupRepository.create(createGroupDto, creatorId);
   }
 
@@ -56,6 +58,7 @@ export class GroupService {
     updateGroupDto: UpdateGroupDto,
   ): Promise<GroupEntity> {
     const group = await this.findGroup(id);
+    updateGroupDto.pictureName = `${GROUP_PICTURE_DEFAULT_PATH}/${updateGroupDto.pictureName}`;
     return this.groupRepository.update(group.id, updateGroupDto);
   }
 }

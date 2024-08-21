@@ -39,6 +39,7 @@ export class AuthGuard implements CanActivate {
           decodedAccessToken.sub,
         );
         if (tokenInRedis) {
+          req.user = decodedAccessToken;
           return true;
         }
       }
@@ -67,6 +68,7 @@ export class AuthGuard implements CanActivate {
               res.cookie('access_token', newAccessToken, {
                 httpOnly: true,
               });
+              req.user = decodedRefreshToken;
               return true;
             }
           }

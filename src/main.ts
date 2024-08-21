@@ -1,6 +1,6 @@
 import { join } from 'path';
 import * as dotenv from 'dotenv';
-import { AppModule } from './app/app.module';
+import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -22,7 +22,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: `http://${process.env.APP_HOST}:${process.env.APP_PORT}`,
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     credentials: true,
   });
 

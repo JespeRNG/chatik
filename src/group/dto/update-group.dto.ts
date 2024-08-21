@@ -12,5 +12,5 @@ export class UpdateGroupDto {
   @MinLength(4)
   @IsOptional()
   @ApiProperty({ description: 'Group picture path to file.' })
-  picturePath: string;
+  pictureName: string;
 }

@@ -74,7 +74,7 @@ export class AuthService {
   }
 
   public async logout(userId: string) {
-    await this.redisService.removeAccessToken(userId);
+    await this.redisService.removeTokens(userId);
   }
 
   private async updateRefreshToken(userId: string, refreshToken: string) {

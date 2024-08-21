@@ -33,7 +33,8 @@ export class RedisService {
     return await this.redisRepository.get('refresh_token', userId);
   }
 
-  public async removeAccessToken(userId: string) {
+  public async removeTokens(userId: string) {
     await this.redisRepository.delete('access_token', userId);
+    await this.redisRepository.delete('refresh_token', userId);
   }
 }

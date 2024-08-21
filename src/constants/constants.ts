@@ -4,3 +4,4 @@ export const USER_NOT_FOUND_EXCEPTION = 'User not found.';
 export const ROUNDS_OF_HASHING = 10;
 export const ACCESS_TOKEN_EXPIRY = '30m';
 export const REFRESH_TOKEN_EXPIRY = '7d';
+export const GROUP_PICTURE_DEFAULT_PATH = '../groupPictures';

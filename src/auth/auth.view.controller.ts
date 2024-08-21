@@ -10,9 +10,13 @@ import {
   Render,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from './guards/auth.guard';
+import { ApiExcludeController } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
+@ApiExcludeController()
 @Controller()
 export class AuthViewController {
   constructor(private readonly authService: AuthService) {}
@@ -67,5 +71,22 @@ export class AuthViewController {
       maxAge: 604800000, // 7 days in milliseconds
     });
     return res.redirect('/');
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  public logout(@Req() req: Request, @Res() res: Response) {
+    this.authService.logout(req.user['sub']);
+
+    res.cookie('access_token', '', {
+      httpOnly: true,
+      expires: new Date(0),
+    });
+    res.cookie('refresh_token', '', {
+      httpOnly: true,
+      expires: new Date(0),
+    });
+
+    res.redirect('/signin');
   }
 }

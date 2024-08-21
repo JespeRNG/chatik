@@ -39,6 +39,6 @@ export class GroupsMenuGateway implements OnGatewayConnection {
   public async getRelatedGroups(@ConnectedSocket() socket: Socket) {
     const userId = socket.user.sub;
     const groups = await this.groupService.findRelated(userId);
-    socket.emit('sendGroups', groups);
+    socket.emit('sendGroupsToClient', groups);
   }
 }

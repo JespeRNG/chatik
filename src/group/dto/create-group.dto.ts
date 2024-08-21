@@ -17,5 +17,5 @@ export class CreateGroupDto {
   @MaxLength(64)
   @IsString()
   @ApiProperty({ description: 'Group picture path to file.' })
-  picturePath: string;
+  pictureName: string;
 }

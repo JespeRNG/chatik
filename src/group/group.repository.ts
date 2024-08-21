@@ -15,7 +15,7 @@ export class GroupRepository {
     return this.prisma.group.create({
       data: {
         name: groupDto.name,
-        picture: groupDto.picturePath,
+        picture: groupDto.pictureName || null,
         creator: {
           connect: {
             id: creatorId,
@@ -71,7 +71,7 @@ export class GroupRepository {
     id: string,
     updateGroupDto: UpdateGroupDto,
   ): Promise<GroupEntity> {
-    const { name, picturePath } = updateGroupDto;
+    const { name, pictureName: picturePath } = updateGroupDto;
 
     return this.prisma.group.update({
       where: { id },

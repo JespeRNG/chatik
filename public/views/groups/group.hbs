@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <link rel='preconnect' href='https://fonts.googleapis.com' />
+    <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin />
+    <link
+      href='https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap'
+      rel='stylesheet'
+    />
+    <style>
+        body {
+            font-family: Lato, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .chat-header {
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            background-color: #e9ecff;
+            padding: 10px;
+            box-sizing: border-box;
+            z-index: 1000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-button, .settings-button {
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-image-container {
+            width: 60px;
+            height: 60px;
+            background-color: #ccc;
+            border-radius: 50%;
+            margin-right: 15px;
+            background-image: url('path_to_profile_image');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .header-title p {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .message {
+            max-width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            padding-bottom: 0px;
+            border-radius: 30px;
+            position: relative;
+            word-wrap: break-word; /* Додає обтікання слів */
+        }
+
+        .friends-message {
+            background-color: #d9e4ff;
+            align-self: flex-start;
+            margin-top: 35px;
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-left: 15px;
+            border-bottom-left-radius: 0px;
+            word-break: break-word; /* Перенос слів на наступний рядок */
+        }
+
+        .my-message {
+            background-color: #e1e1e1;
+            align-self: flex-end;
+            margin-right: 15px;
+            padding-top: 25px;
+            padding-left: 20px;
+            padding-right: 20px;
+            border-bottom-right-radius: 0px;
+        }
+
+        .message-author {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .message-text {
+            margin: 0;
+        }
+
+        .message-timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .chat-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            height: calc(100vh - 7vh - 50px);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding-bottom: 0;
+            margin-top: 50px;
+        }
+
+        .chat-input {
+            max-width: 620px;
+            bottom: 0;
+            margin: 0 auto;
+            height: 6.5vh;
+            display: flex;
+            padding: 10px;
+            border-top: 0px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .chat-input input[type="text"] {
+            flex-grow: 1;
+            height: 2.5vh;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 30px;
+            outline: none;
+            background-color: #EBEAEA;
+        }
+
+        .send-button {
+            background-color: #322A42;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+            margin-left: 10px;
+        }
+
+        .send-button img {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .chat-header, .chat-input {
+                padding: 5px;
+            }
+
+            .chat-input input[type="text"] {
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .send-button {
+                width: 35px;
+                height: 35px;
+            }
+
+            .send-button img {
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <button class="back-button">
+            <img src="../../images/VectorarrowBack.png" alt="Back">
+        </button>
+        <div class="header-title">
+            <div class="profile-image-container"></div>
+            <p>Group name</p>
+        </div>
+        <button class="settings-button">
+            <img src="../../images/VectorSettings.png" alt="Settings">
+        </button>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-messages">
+            <div class="message friends-message">
+                <p class="message-author">palindrome-</p>
+                <p class="message-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel ipsum eu orci vehicula pretium nec vel orci. Fusce nec porttitor odio. Proin varius condimentum ipsum a posuere. Mauris vestibulum eros mi, eget rhoncus turpis semper ut. </p>
+                <p class="message-timestamp">21 Aug 1:49 pm</p>
+            </div>
+            <div class="message my-message">
+                <p class="message-text">Угу... Ти довбойоб?</p>
+                <p class="message-timestamp">21 Aug 1:50 pm</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-input">
+        <input type="text" placeholder="Type a message">
+        <button class="send-button">
+            <img src="../../images/VectorSend.png" alt="Send">
+        </button>
+    </div>
+</body>
+</html>

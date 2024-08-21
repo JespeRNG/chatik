@@ -3,7 +3,6 @@ import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiCreatedResponse,
-  ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import {
   Controller,
@@ -26,7 +25,6 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { GroupParticipantService } from './participant/group-participant.service';
-import { AuthGuard } from 'src/auth/guards/auth.guard';
 
 @ApiBearerAuth()
 @ApiTags('api/groups')
@@ -36,16 +34,6 @@ export class GroupApiController {
     private readonly groupService: GroupService,
     private readonly groupParticipantService: GroupParticipantService,
   ) {}
-
-  //#region MVC
-  @Get('groups')
-  @ApiOkResponse({ description: 'The page was successfully opened' })
-  @Render('groups/groups')
-  @ApiExcludeEndpoint()
-  public groupsPage() {
-    return;
-  }
-  //#endregion
 
   @Post()
   @ApiBearerAuth()
@@ -60,7 +48,7 @@ export class GroupApiController {
   }
 
   @Get()
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({ type: GroupEntity, isArray: true })
   public async getGroups() {
     return this.groupService.findAll();
