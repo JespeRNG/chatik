@@ -1,17 +1,19 @@
-const socket = io('localhost:3001/menu', {
-  withCredentials: true,
-  transports: ['websocket', 'polling'],
-});
+$(document).ready(function () {
+  const socket = io('localhost:3001/menu', {
+    withCredentials: true,
+    transports: ['websocket', 'polling'],
+  });
 
-socket.on('connect', () => {
-  socket.emit('getRelatedGroups', { userId: 'user-id' });
-});
+  socket.on('connect', () => {
+    socket.emit('getRelatedGroups', { userId: 'user-id' });
+  });
 
-socket.on('sendGroupsToClient', (groups) => {
-  $('.timeline').empty();
-  groups.forEach((el) => {
-    $('.timeline').append(`
-        <div class='timeline-item'>
+  socket.on('sendGroupsToClient', (groups) => {
+    $('.timeline').empty();
+    groups.forEach((el) => {
+      $('.timeline').append(`
+      <div class='timeline-item'>
+        <a href="/group?groupId=${el.id}" style="text-decoration: none;">
           <div class='timeline-item-content'>
             <div class='timeline-item-content-image' style="background-image: url(${el.picture}); background-size: cover; background-position: center;">
             </div>
@@ -33,10 +35,9 @@ socket.on('sendGroupsToClient', (groups) => {
               </p>
             </div>
           </div>
-        </div>
-      `);
-  });
-  $('.timeline').append(`
-      <a href='#' class='timeline-item-content-text-loadmore'>Load more</a>  
+        </a>
+      </div>
     `);
+    });
+  });
 });

@@ -6,7 +6,11 @@ import { GroupRepository } from './group.repository';
 import { RedisModule } from 'src/redis/redis.module';
 import { GroupApiController } from './group.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
+import { GroupGateway } from './gateways/group.gateway';
+import { UserRepository } from 'src/user/user.repository';
+import { MessageService } from './message/message.service';
 import { GroupViewController } from './group.view.controller';
+import { MessageRepository } from './message/message.repository';
 import { GroupsMenuGateway } from './gateways/groups-menu.gateway';
 import { GroupParticipantService } from './participant/group-participant.service';
 import { GroupParticipantRepository } from './participant/group-participant.repository';
@@ -15,10 +19,14 @@ import { GroupParticipantRepository } from './participant/group-participant.repo
   controllers: [GroupApiController, GroupViewController],
   providers: [
     GroupService,
+    MessageService,
     GroupRepository,
-    GroupParticipantRepository,
-    GroupParticipantService,
+    MessageRepository,
     GroupsMenuGateway,
+    GroupGateway,
+    GroupParticipantService,
+    GroupParticipantRepository,
+    UserRepository,
   ],
   imports: [PrismaModule, UserModule, RedisModule, JwtModule],
 })

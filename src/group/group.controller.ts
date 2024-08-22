@@ -9,7 +9,6 @@ import {
   Get,
   Post,
   Body,
-  Res,
   Param,
   Delete,
   Request,
@@ -17,12 +16,14 @@ import {
   ParseIntPipe,
   Patch,
   BadRequestException,
-  Render,
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { GroupEntity } from './entities/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { MessageService } from './message/message.service';
+import { MessageEntity } from './message/entities/message.entity';
+import { CreateMessageDto } from './message/dto/create-message.dto';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
 import { GroupParticipantService } from './participant/group-participant.service';
 
@@ -32,9 +33,11 @@ import { GroupParticipantService } from './participant/group-participant.service
 export class GroupApiController {
   constructor(
     private readonly groupService: GroupService,
+    private readonly messageService: MessageService,
     private readonly groupParticipantService: GroupParticipantService,
   ) {}
 
+  //#region Group
   @Post()
   @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
@@ -92,7 +95,9 @@ export class GroupApiController {
 
     return await this.groupService.updateGroup(id, updateGroupDto);
   }
+  //#endregion
 
+  //#region Participant
   @Post(':groupId/participant/:userId')
   @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
@@ -114,4 +119,15 @@ export class GroupApiController {
   ) {
     return this.groupParticipantService.removeParticipant(groupId, userId);
   }
+  //#endregion
+
+  //#region Message
+  @Post('/message')
+  @ApiBearerAuth()
+  @UseGuards(AccessTokenGuard)
+  @ApiCreatedResponse({ type: MessageEntity })
+  public createMessage(@Body() createMessageDto: CreateMessageDto) {
+    return this.messageService.createMessage(createMessageDto);
+  }
+  //#endregion
 }

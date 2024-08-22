@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
 import { NestFactory, Reflector } from '@nestjs/core';
+import { SocketIoAdapter } from './socket/socket-io.adapter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
@@ -25,6 +26,7 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     credentials: true,
   });
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   const config = new DocumentBuilder()
     .setTitle('Chatik')

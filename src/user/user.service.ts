@@ -1,14 +1,9 @@
-import * as bcrypt from 'bcrypt';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { USER_NOT_FOUND_EXCEPTION } from 'src/constants/constants';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { USER_NOT_FOUND_EXCEPTION } from 'src/constants/constants';
 
 export const roundsOfHashing = 10;
 

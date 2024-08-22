@@ -53,7 +53,6 @@
             background-color: #ccc;
             border-radius: 50%;
             margin-right: 15px;
-            background-image: url('path_to_profile_image');
             background-size: cover;
             background-position: center;
         }
@@ -65,31 +64,32 @@
 
         .message {
             max-width: 100%;
-            margin-bottom: 15px;
             padding: 10px;
             padding-bottom: 0px;
+            margin-top: 15px;
+            margin-bottom: 15px;
             border-radius: 30px;
             position: relative;
-            word-wrap: break-word; /* Додає обтікання слів */
+            word-wrap: break-word;
         }
 
         .friends-message {
             background-color: #d9e4ff;
             align-self: flex-start;
-            margin-top: 35px;
             padding-left: 20px;
             padding-right: 20px;
             margin-left: 15px;
+            padding-top: 0px;
             border-bottom-left-radius: 0px;
-            word-break: break-word; /* Перенос слів на наступний рядок */
+            word-break: break-word;
         }
 
         .my-message {
             background-color: #e1e1e1;
             align-self: flex-end;
             margin-right: 15px;
-            padding-top: 25px;
             padding-left: 20px;
+            padding-top: 15px;
             padding-right: 20px;
             border-bottom-right-radius: 0px;
         }
@@ -118,22 +118,22 @@
         }
 
         .chat-container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             background-color: #ffffff;
-            height: calc(100vh - 7vh - 50px);
+            height: calc(100vh - 7vh - 80px);
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
             padding-bottom: 0;
-            margin-top: 50px;
+            margin-top: 80px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
         }
 
         .chat-input {
-            max-width: 620px;
-            bottom: 0;
+            max-width: 660px;
             margin: 0 auto;
-            height: 6.5vh;
             display: flex;
             padding: 10px;
             border-top: 0px solid #ccc;
@@ -193,37 +193,33 @@
 </head>
 <body>
     <div class="chat-header">
-        <button class="back-button">
+        <a href="/" class="back-button">
             <img src="../../images/VectorarrowBack.png" alt="Back">
-        </button>
+        </a>
         <div class="header-title">
-            <div class="profile-image-container"></div>
-            <p>Group name</p>
+            <div class="profile-image-container" style="background-image: url({{ picture }}); background-size: cover; background-position: center;"></div>
+            <p>{{ name }}</p>
         </div>
         <button class="settings-button">
-            <img src="../../images/VectorSettings.png" alt="Settings">
+            <img src="../../images/VectorSettings.png" alt="Settings" style="width: 30px; height: 30px;">
         </button>
     </div>
 
     <div class="chat-container">
         <div class="chat-messages">
-            <div class="message friends-message">
-                <p class="message-author">palindrome-</p>
-                <p class="message-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus vel ipsum eu orci vehicula pretium nec vel orci. Fusce nec porttitor odio. Proin varius condimentum ipsum a posuere. Mauris vestibulum eros mi, eget rhoncus turpis semper ut. </p>
-                <p class="message-timestamp">21 Aug 1:49 pm</p>
-            </div>
-            <div class="message my-message">
-                <p class="message-text">Угу... Ти довбойоб?</p>
-                <p class="message-timestamp">21 Aug 1:50 pm</p>
-            </div>
+            
         </div>
     </div>
 
     <div class="chat-input">
-        <input type="text" placeholder="Type a message">
-        <button class="send-button">
+        <input id="message-input" type="text" placeholder="Type a message">
+        <button id="send-button" class="send-button">
             <img src="../../images/VectorSend.png" alt="Send">
         </button>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js" integrity="sha512-luMnTJZ7oEchNDZAtQhgjomP1eZefnl82ruTH/3Oj/Yu5qYtwL7+dVRccACS/Snp1lFXq188XFipHKYE75IaQQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script src="../../commonJS/group.js"></script>
 </body>
 </html>
