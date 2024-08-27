@@ -11,13 +11,26 @@ export class MessageService {
     private readonly userRepository: UserRepository,
   ) {}
 
-  public createMessage(
+  public async createMessage(
     createMessageDto: CreateMessageDto,
   ): Promise<MessageEntity> {
     return this.messageRepository.create(createMessageDto);
   }
 
+  public async saveMessagesToDb(
+    groupId: string,
+    createMessageDtos: CreateMessageDto[],
+  ) {
+    await this.messageRepository.createMany(groupId, createMessageDtos);
+  }
+
   public async getSenderUsername(senderId: string): Promise<string> {
     return (await this.userRepository.findById(senderId)).username;
+  }
+
+  public async getAllMessagesFromGroup(
+    groupId: string,
+  ): Promise<MessageEntity[]> {
+    return await this.messageRepository.getAllMessages(groupId);
   }
 }

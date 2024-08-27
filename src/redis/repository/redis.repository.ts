@@ -1,5 +1,6 @@
 import { Redis } from 'ioredis';
 import { Inject, Injectable } from '@nestjs/common';
+import { CacheMessageDto } from 'src/group/message/dto/cache-message.dto';
 
 @Injectable()
 export class RedisRepository {
@@ -13,12 +14,12 @@ export class RedisRepository {
     return this.redisClient.get(`${prefix}:${key}`);
   }
 
-  public async set(prefix: string, key: string, value: string): Promise<void> {
-    await this.redisClient.set(`${prefix}:${key}`, value);
-  }
-
   public async delete(prefix: string, key: string): Promise<void> {
     await this.redisClient.del(`${prefix}:${key}`);
+  }
+
+  public async clearMessagesCache(key: string): Promise<void> {
+    await this.redisClient.del(key);
   }
 
   public async setWithExpiry(
@@ -28,5 +29,25 @@ export class RedisRepository {
     expiry: number,
   ): Promise<void> {
     await this.redisClient.set(`${prefix}:${key}`, value, 'EX', expiry);
+  }
+
+  public async rpush(key: string, ...values: string[]): Promise<number> {
+    return this.redisClient.rpush(key, ...values);
+  }
+
+  public async lpop(key: string, count = 1): Promise<string[]> {
+    return this.redisClient.lpop(key, count);
+  }
+
+  public async llen(key: string): Promise<number> {
+    return this.redisClient.llen(key);
+  }
+
+  public async lrange(
+    key: string,
+    start: number,
+    stop: number,
+  ): Promise<string[]> {
+    return this.redisClient.lrange(key, start, stop);
   }
 }

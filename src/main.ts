@@ -23,8 +23,6 @@ async function bootstrap() {
 
   app.enableCors({
     origin: `http://${process.env.APP_HOST}:${process.env.APP_PORT}`,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-    credentials: true,
   });
   app.useWebSocketAdapter(new SocketIoAdapter(app));
 

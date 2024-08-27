@@ -16,4 +16,25 @@ export class MessageRepository {
       },
     });
   }
+
+  public async createMany(
+    groupId: string,
+    messages: CreateMessageDto[],
+  ): Promise<void> {
+    await this.prisma.message.createMany({
+      data: messages.map((msg) => ({
+        content: msg.content,
+        senderId: msg.senderId,
+        groupId: groupId,
+      })),
+    });
+  }
+
+  public getAllMessages(groupId: string): Promise<MessageEntity[]> {
+    return this.prisma.message.findMany({
+      where: {
+        groupId: groupId,
+      },
+    });
+  }
 }
