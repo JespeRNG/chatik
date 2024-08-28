@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { GroupService } from './group.service';
 import { UserModule } from 'src/user/user.module';
 import { GroupRepository } from './group.repository';
+import { RedisModule } from '@nestjs-modules/ioredis';
 import { RedisService } from 'src/redis/redis.service';
 import { GroupApiController } from './group.controller';
 import { PrismaModule } from 'src/prisma/prisma.module';
@@ -21,18 +22,18 @@ import { GroupParticipantRepository } from './participant/group-participant.repo
   controllers: [GroupApiController, GroupViewController],
   providers: [
     GroupService,
+    GroupGateway,
+    RedisService,
     MessageService,
+    UserRepository,
     GroupRepository,
+    RedisRepository,
     MessageRepository,
     GroupsMenuGateway,
-    GroupGateway,
+    redisClientFactory,
     GroupParticipantService,
     GroupParticipantRepository,
-    UserRepository,
-    RedisService,
-    RedisRepository,
-    redisClientFactory,
   ],
-  imports: [PrismaModule, UserModule, JwtModule, GroupModule],
+  imports: [PrismaModule, UserModule, JwtModule, GroupModule, RedisModule],
 })
 export class GroupModule {}

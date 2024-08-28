@@ -1,6 +1,5 @@
 import { Redis } from 'ioredis';
 import { Inject, Injectable } from '@nestjs/common';
-import { CacheMessageDto } from 'src/group/message/dto/cache-message.dto';
 
 @Injectable()
 export class RedisRepository {

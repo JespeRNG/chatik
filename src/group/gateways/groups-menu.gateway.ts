@@ -8,6 +8,8 @@ import {
 import { UseGuards } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { GroupService } from '../group.service';
+import { UserService } from 'src/user/user.service';
+import { MessageService } from '../message/message.service';
 import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 
 @UseGuards(SocketAuthGuard)
@@ -24,7 +26,11 @@ import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
   },
 })
 export class GroupsMenuGateway implements OnGatewayConnection {
-  constructor(private readonly groupService: GroupService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly groupService: GroupService,
+    private readonly messageService: MessageService,
+  ) {}
   @WebSocketServer() server: Namespace;
 
   handleConnection(client: Socket) {
@@ -39,6 +45,22 @@ export class GroupsMenuGateway implements OnGatewayConnection {
   public async getRelatedGroups(@ConnectedSocket() socket: Socket) {
     const userId = socket.user.sub;
     const groups = await this.groupService.findRelated(userId);
-    socket.emit('sendGroupsToClient', groups);
+
+    const groupsInfo = await Promise.all(
+      groups.map(async (group) => {
+        const lastMessage =
+          (await this.messageService.getLastMessage(group.id)) || null;
+        let creatorUsername = null;
+        if (lastMessage) {
+          creatorUsername =
+            (await this.userService.findUserById(lastMessage.senderId))
+              .username || null;
+        }
+
+        return { ...group, lastMessage, creatorUsername };
+      }),
+    );
+
+    socket.emit('sendGroupsToClient', groupsInfo);
   }
 }

@@ -1,13 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { RedisRepository } from './repository/redis.repository';
-import { CacheMessageDto } from 'src/group/message/dto/cache-message.dto';
-import { MessageService } from 'src/group/message/message.service';
+import { MessageDataDto } from 'src/group/message/dto/message-data.dto';
 
 @Injectable()
 export class RedisService {
   constructor(
     @Inject(RedisRepository) private readonly redisRepository: RedisRepository,
-    @Inject(MessageService) private readonly messageService: MessageService,
   ) {}
   public async saveTokens(
     userId: string,
@@ -28,6 +26,7 @@ export class RedisService {
     );
   }
 
+  //#region Token
   public async getAccessToken(userId: string) {
     return await this.redisRepository.get('access_token', userId);
   }
@@ -40,27 +39,46 @@ export class RedisService {
     await this.redisRepository.delete('access_token', userId);
     await this.redisRepository.delete('refresh_token', userId);
   }
+  //#endregion
 
+  //#region Add message
   public async addMessageToCache(
-    message: CacheMessageDto,
-  ): Promise<CacheMessageDto> {
+    message: MessageDataDto,
+  ): Promise<MessageDataDto> {
     const cacheKey = `group:${message.groupId}:messages`;
-
     await this.redisRepository.rpush(cacheKey, JSON.stringify(message));
-
-    const messageCount = await this.redisRepository.llen(cacheKey);
-
-    if (messageCount > 9) {
-      const allMessages = await this.redisRepository.lrange(cacheKey, 0, -1);
-
-      if (allMessages.length > 0) {
-        await this.messageService.saveMessagesToDb(
-          message.groupId,
-          allMessages.map((msg) => JSON.parse(msg)),
-        );
-      }
-      await this.redisRepository.clearMessagesCache(cacheKey);
-    }
     return message;
   }
+
+  public async getMessagesCount(groupId: string): Promise<number> {
+    const cacheKey = `group:${groupId}:messages`;
+    return await this.redisRepository.llen(cacheKey);
+  }
+
+  public async getAllMessagesFromCache(
+    groupId: string,
+  ): Promise<MessageDataDto[]> {
+    const cacheKey = `group:${groupId}:messages`;
+    const allMessages = await this.redisRepository.lrange(cacheKey, 0, -1);
+    return allMessages.map((msg) => JSON.parse(msg));
+  }
+
+  public async clearMessagesCache(groupId: string): Promise<void> {
+    const cacheKey = `group:${groupId}:messages`;
+    await this.redisRepository.clearMessagesCache(cacheKey);
+  }
+
+  public async getLastMessageFromCache(
+    groupId: string,
+  ): Promise<MessageDataDto> {
+    const cacheKey = `group:${groupId}:messages`;
+    const messages = await this.redisRepository.lrange(cacheKey, 0, -1);
+
+    if (messages.length === 0) {
+      return null;
+    }
+
+    return JSON.parse(messages[messages.length - 1]);
+  }
+  //#endregion
 }

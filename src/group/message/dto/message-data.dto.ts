@@ -1,6 +1,6 @@
 import { IsNotEmpty, MinLength, MaxLength, IsUUID } from 'class-validator';
 
-export class CacheMessageDto {
+export class MessageDataDto {
   @MaxLength(500)
   @MinLength(1)
   @IsNotEmpty()

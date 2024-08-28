@@ -37,4 +37,14 @@ export class MessageRepository {
       },
     });
   }
+
+  public async getLastMessage(groupId: string): Promise<MessageEntity> {
+    const messages = await this.prisma.message.findMany({
+      where: { groupId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    });
+
+    return messages.length > 0 ? messages[0] : null;
+  }
 }

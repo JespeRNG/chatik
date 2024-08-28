@@ -7,9 +7,8 @@ import {
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
-import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 import { MessageService } from '../message/message.service';
-import { RedisService } from 'src/redis/redis.service';
+import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 
 @UseGuards(SocketAuthGuard)
 @WebSocketGateway(3001, {
@@ -25,10 +24,7 @@ import { RedisService } from 'src/redis/redis.service';
   },
 })
 export class GroupGateway {
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly redisService: RedisService,
-  ) {}
+  constructor(private readonly messageService: MessageService) {}
   @WebSocketServer() server: Namespace;
 
   @SubscribeMessage('joinToGroup')
@@ -52,25 +48,8 @@ export class GroupGateway {
       content: string;
     },
   ) {
-    /* this.messageService
-      .createMessage({
-        content,
-        groupId,
-        senderId: socket.user.sub,
-      })
-      .then(async (msg) => {
-        const senderUsername = await this.messageService.getSenderUsername(
-          socket.user.sub,
-        );
-        this.server.in(msg.groupId).emit('sendMessage', {
-          senderUsername,
-          content: msg.content,
-          senderId: msg.senderId,
-          createdAt: msg.createdAt,
-        });
-      }); */
-    await this.redisService
-      .addMessageToCache({
+    await this.messageService
+      .addMessage({
         content,
         groupId,
         senderId: socket.user.sub,
@@ -92,7 +71,7 @@ export class GroupGateway {
   @SubscribeMessage('sendAllMessages')
   public async handleSendAllMessages(@MessageBody() groupId) {
     const allMessages = await Promise.all(
-      (await this.messageService.getAllMessagesFromGroup(groupId)).map(
+      (await this.messageService.getAllMessagesForGroup(groupId)).map(
         async (x) => {
           const senderUsername = await this.messageService.getSenderUsername(
             x.senderId,
