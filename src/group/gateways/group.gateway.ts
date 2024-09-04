@@ -4,9 +4,10 @@ import {
   WebSocketGateway,
   ConnectedSocket,
   MessageBody,
+  OnGatewayInit,
 } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
-import { Namespace, Socket } from 'socket.io';
+import { Socket, Namespace, Server } from 'socket.io';
 import { MessageService } from '../message/message.service';
 import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 
@@ -23,9 +24,15 @@ import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
     res.end();
   },
 })
-export class GroupGateway {
+export class GroupGateway implements OnGatewayInit {
+  @WebSocketServer() io: Server;
+  @WebSocketServer() menu: Namespace;
+
   constructor(private readonly messageService: MessageService) {}
-  @WebSocketServer() server: Namespace;
+
+  afterInit() {
+    this.menu = this.io.server.of('/menu');
+  }
 
   @SubscribeMessage('joinToGroup')
   public handleJoinToGroup(
@@ -59,7 +66,14 @@ export class GroupGateway {
         const senderUsername = await this.messageService.getSenderUsername(
           socket.user.sub,
         );
-        this.server.in(msg.groupId).emit('sendMessage', {
+        this.io.in(msg.groupId).emit('sendMessage', {
+          senderUsername,
+          content: msg.content,
+          senderId: msg.senderId,
+          createdAt: msg.createdAt,
+        });
+        this.menu.emit('sendNewMessage', {
+          groupId,
           senderUsername,
           content: msg.content,
           senderId: msg.senderId,
@@ -86,7 +100,7 @@ export class GroupGateway {
       ),
     );
 
-    this.server.in(groupId).emit('sendAllMessages', {
+    this.io.in(groupId).emit('sendAllMessages', {
       allMessages,
     });
   }

@@ -17,11 +17,20 @@ export class GroupService {
     private readonly userService: UserService,
   ) {}
 
-  public create(
+  public async create(
     createGroupDto: CreateGroupDto,
     creatorId: string,
   ): Promise<GroupEntity> {
     createGroupDto.pictureName = `${GROUP_PICTURE_DEFAULT_PATH}/${createGroupDto.pictureName}`;
+
+    const groupExists = await this.groupRepository.findByName(
+      createGroupDto.name,
+    );
+
+    if (groupExists) {
+      throw new ConflictException('Group already exists.');
+    }
+
     return this.groupRepository.create(createGroupDto, creatorId);
   }
 

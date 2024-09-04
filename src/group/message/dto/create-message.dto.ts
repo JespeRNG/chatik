@@ -17,4 +17,6 @@ export class CreateMessageDto {
   @IsNotEmpty()
   @ApiProperty()
   groupId: string;
+
+  createdAt: Date;
 }

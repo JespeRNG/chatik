@@ -20,6 +20,5 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     RedisModule,
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule {}

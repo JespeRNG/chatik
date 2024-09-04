@@ -26,6 +26,7 @@ export class MessageRepository {
         content: msg.content,
         senderId: msg.senderId,
         groupId: groupId,
+        createdAt: msg.createdAt,
       })),
     });
   }
@@ -42,7 +43,7 @@ export class MessageRepository {
     const messages = await this.prisma.message.findMany({
       where: { groupId },
       orderBy: { createdAt: 'desc' },
-      take: 1,
+      take: 10,
     });
 
     return messages.length > 0 ? messages[0] : null;

@@ -90,5 +90,7 @@ export class MessageService {
     return lastCachedMessageCreatedAt > lastMessageFromDbCreatedAt
       ? lastCachedMessage
       : lastMessageFromDb;
+
+    return null;
   }
 }

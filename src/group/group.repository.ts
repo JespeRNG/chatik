@@ -94,4 +94,8 @@ export class GroupRepository {
       },
     });
   }
+
+  public findByName(groupName: string): Promise<GroupEntity> {
+    return this.prisma.group.findUnique({ where: { name: groupName } });
+  }
 }

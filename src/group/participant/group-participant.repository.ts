@@ -18,6 +18,27 @@ export class GroupParticipantRepository {
     });
   }
 
+  public async createMany(
+    groupId: string,
+    userIds: string[],
+  ): Promise<GroupParticipantEntity[]> {
+    await this.prisma.participant.createMany({
+      data: userIds.map((userId) => ({
+        groupId,
+        userId,
+      })),
+    });
+
+    const createdParticipants = await this.prisma.participant.findMany({
+      where: {
+        groupId,
+        userId: { in: userIds },
+      },
+    });
+
+    return createdParticipants;
+  }
+
   public findAll() {
     return this.prisma.participant.findMany({
       include: {
@@ -31,11 +52,16 @@ export class GroupParticipantRepository {
     return this.prisma.participant.findFirst({ where: { userId } });
   }
 
+  public async findByUserIdInGroup(
+    groupId: string,
+    userId: string,
+  ): Promise<GroupParticipantEntity> {
+    return this.prisma.participant.findFirst({
+      where: { userId, groupId },
+    });
+  }
+
   public delete(id: string): Promise<GroupParticipantEntity> {
     return this.prisma.participant.delete({ where: { id } });
   }
-
-  /* public findOne(id: string) {}
-
-  public update() {} */
 }

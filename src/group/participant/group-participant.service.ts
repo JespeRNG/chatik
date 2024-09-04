@@ -33,6 +33,25 @@ export class GroupParticipantService {
     return this.groupParticipantRepository.create(groupId, userId);
   }
 
+  public async createParticipants(
+    groupId: string,
+    userIds: string[],
+  ): Promise<GroupParticipantEntity[]> {
+    const group = await this.groupService.findGroup(groupId);
+
+    for (const userId of userIds) {
+      await this.validateParticipant(groupId, userId);
+
+      if (group.creatorId === userId) {
+        throw new ConflictException(
+          'Group creator cannot be added to the group.',
+        );
+      }
+    }
+
+    return await this.groupParticipantRepository.createMany(groupId, userIds);
+  }
+
   public async removeParticipant(
     groupId: string,
     userId: string,
@@ -67,9 +86,12 @@ export class GroupParticipantService {
       throw new NotFoundException('Group not found.');
     }
 
-    const existingParticipant =
-      await this.groupParticipantRepository.findByUserId(userId);
-    if (existingParticipant) {
+    const existingParticipantInGroup =
+      await this.groupParticipantRepository.findByUserIdInGroup(
+        groupId,
+        userId,
+      );
+    if (existingParticipantInGroup) {
       throw new ConflictException('Participant is already in this group.');
     }
   }
