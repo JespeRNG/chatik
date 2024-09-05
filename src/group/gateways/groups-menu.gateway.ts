@@ -71,42 +71,40 @@ export class GroupsMenuGateway {
       createGroupDto.name = payload.groupName;
       createGroupDto.pictureName = payload.groupPicName;
 
-      const userIds = await Promise.all(
-        payload.usersToAdd.map(async (username) => {
-          const userId = (await this.userService.findByUsername(username)).id;
-
-          if (userId === socket.user.sub) {
-            throw new ConflictException(
-              `Group creator cannot be a participant.`,
-            );
-          }
-          return userId;
-        }),
-      );
-
       const createdGroup = await this.groupService.create(
         createGroupDto,
         socket.user.sub,
       );
 
-      if (userIds) {
+      if (payload.usersToAdd.length > 0) {
+        const userIds = await Promise.all(
+          payload.usersToAdd.map(async (username) => {
+            const userId = (await this.userService.findByUsername(username)).id;
+
+            if (userId === socket.user.sub) {
+              throw new ConflictException(
+                `Group creator cannot be a participant.`,
+              );
+            }
+            return userId;
+          }),
+        );
+
         await this.participantService.createParticipants(
           createdGroup.id,
           userIds,
         );
-      }
 
-      userIds.forEach((userId) => {
-        const sockets = this.io.sockets;
-        sockets.forEach((userSocket) => {
-          if (
-            userSocket.user.sub === userId ||
-            userSocket.user.sub === createdGroup.creatorId
-          ) {
-            userSocket.emit('sendNewGroup', createdGroup);
-          }
+        userIds.forEach((userId) => {
+          const sockets = this.io.sockets;
+          sockets.forEach((userSocket) => {
+            if (userSocket.user.sub === userId) {
+              userSocket.emit('sendNewGroup', createdGroup);
+            }
+          });
         });
-      });
+      }
+      socket.emit('sendNewGroup', createdGroup);
     } catch (err) {
       socket.emit('error', { message: err.message || 'Error.' });
     }

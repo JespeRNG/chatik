@@ -28,11 +28,11 @@ export class UserService {
     return user;
   }
 
-  public async findByUsername(username: string): Promise<UserEntity> {
+  public async findByUsername(username: string): Promise<UserEntity | null> {
     const user = await this.userRepository.findByUsername(username);
 
     if (!user) {
-      throw new NotFoundException('User was not found.');
+      return null;
     }
 
     return user;

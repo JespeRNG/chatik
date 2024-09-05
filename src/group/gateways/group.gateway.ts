@@ -93,7 +93,10 @@ export class GroupGateway implements OnGatewayInit {
   }
 
   @SubscribeMessage('sendAllMessages')
-  public async handleSendAllMessages(@MessageBody() groupId) {
+  public async handleSendAllMessages(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() groupId,
+  ) {
     const allMessages = await Promise.all(
       (await this.messageService.getAllMessagesForGroup(groupId)).map(
         async (x) => {
@@ -110,9 +113,10 @@ export class GroupGateway implements OnGatewayInit {
       ),
     );
 
-    this.io.in(groupId).emit('sendAllMessages', {
+    /* this.io.in(groupId).emit('sendAllMessages', {
       allMessages,
-    });
+    }); */
+    socket.emit('sendAllMessages', { allMessages });
   }
 
   @SubscribeMessage('getGroupInfo')
