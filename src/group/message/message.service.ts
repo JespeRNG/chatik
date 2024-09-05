@@ -93,4 +93,16 @@ export class MessageService {
 
     return null;
   }
+
+  public async countMessages(groupId: string): Promise<number> {
+    const dbMessagesLength = (
+      await this.messageRepository.getAllMessages(groupId)
+    ).length;
+
+    const redisMessagesLength = (
+      await this.redisService.getAllMessagesFromCache(groupId)
+    ).length;
+
+    return redisMessagesLength + dbMessagesLength;
+  }
 }

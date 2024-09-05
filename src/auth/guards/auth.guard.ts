@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import {
@@ -76,7 +77,6 @@ export class AuthGuard implements CanActivate {
           res.redirect('/signin');
         }
       }
-
       throw new UnauthorizedException(
         'The Access token is invalid or has expired.',
       );

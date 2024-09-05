@@ -108,7 +108,6 @@ export class GroupsMenuGateway {
         });
       });
     } catch (err) {
-      console.log(err);
       socket.emit('error', { message: err.message || 'Error.' });
     }
   }

@@ -58,6 +58,19 @@
             background-position: center;
         }
 
+        .group-info-picture {
+            display: block;
+            width: 110px;
+            height: 110px;
+            background-color: #ccc;
+            border-radius: 50%;
+            text-align: center;
+            background-size: cover;
+            background-position: center;
+            margin: 15px auto;
+            margin-bottom: 50px;
+        }
+
         .header-title p {
             margin: 0;
             font-size: 1.2em;
@@ -190,6 +203,150 @@
                 height: 20px;
             }
         }
+
+        .popup-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+      }
+
+      .popup-content {
+        position: relative;
+        width: 350px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        text-align: center;
+      }
+
+      .close-popup {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 1.5em;
+        color: #333;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .close-popup:hover {
+        color: #000;
+      }
+
+      .popup-content p {
+        text-align: center;
+        color: #4A3F69;
+        margin-bottom: 10px;
+        width: 100%;
+      }
+
+      #messagesNumber {
+        text-align: center;
+        color: #7c5adb;
+        margin-bottom: 10px;
+        margin-top: 0px;
+        width: 100%;
+      }
+
+      #participants {
+        text-align: center;
+        color: #7c5adb;
+        margin-bottom: 10px;
+        margin-top: 0px;
+        width: 100%;
+        word-wrap: break-word;
+      }
+
+      #creator {
+        text-align: center;
+        color: #7c5adb;
+        margin-bottom: 10px;
+        margin-top: 0px;
+        width: 100%;
+        word-wrap: break-word;
+      }
+
+      .custom-close {
+        background: none;
+        border: none;
+        font-size: 1.5em;
+        color: #333;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .custom-close:hover {
+        color: #000;
+      }
+
+      .popup-content input {
+        width: 70%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        box-sizing: border-box;
+      }
+
+      .styled-button {
+        background-color: #322A42;
+        width: 30%;
+        font-size: 18px;
+        color: white;
+        padding: 15px;
+        box-shadow: 0 3px 4px rgba(0, 0, 0, 0.5);
+        margin-top: 10px;
+        margin-bottom: 30px;
+        border-radius: 30px;
+        cursor: pointer;
+        border: none;
+      }
+
+      .edit-mode {
+        background-color: #322A42;
+        width: 30%;
+        font-size: 18px;
+        color: white;
+        padding: 15px;
+        box-shadow: 0 3px 4px rgba(0, 0, 0, 0.5);
+        margin-top: 10px;
+        margin-bottom: 30px;
+        border-radius: 30px;
+        cursor: pointer;
+        border: none;
+      }
+
+      .save-mode {
+        background-color: #7c5adb;
+        width: 30%;
+        font-size: 18px;
+        color: white;
+        padding: 15px;
+        box-shadow: 0 3px 4px rgba(0, 0, 0, 0.5);
+        margin-top: 10px;
+        margin-bottom: 30px;
+        border-radius: 30px;
+        cursor: pointer;
+        border: none;
+      }
+
+      p.system-message {
+        text-align: center;
+        font-size: 15px;
+        color: #808080;
+        font-style: italic;
+        margin: 10px 0;
+      }
     </style>
 </head>
 <body>
@@ -199,9 +356,9 @@
         </a>
         <div class="header-title">
             <div class="profile-image-container" style="background-image: url({{ picture }}); background-size: cover; background-position: center;"></div>
-            <p>{{ name }}</p>
+            <p id="group-name-title" style="color: #4a3f69; font-size: 1.5em;">{{ name }}</p>
         </div>
-        <button class="settings-button">
+        <button class="settings-button" id="groupSettingsButton">
             <img src="../../images/VectorSettings.png" alt="Settings" style="width: 30px; height: 30px;">
         </button>
     </div>
@@ -217,6 +374,25 @@
         <button id="send-button" class="send-button">
             <img src="../../images/VectorSend.png" alt="Send">
         </button>
+    </div>
+    <div id="popupContainer" class="popup-container" style="display: none;">
+      <div class="popup-content">
+        <button class="close-popup custom-close">&times;</button>
+        <h1 style="font-size: 1.2em; color: #4a3f69; flex: 1; margin-bottom: 50px;">Group info</h1>
+        <p>Group name</p>
+        <input type="text" placeholder="Group name" id="groupName" disabled>
+        <p>Participants</p>
+        <p id="participants"></p>
+        <input type="text" id="participantsInput" style="display: none;">
+        <p>Group creator</p>
+        <p id="creator"></p>
+        <p>Total messages</p>
+        <p id="messagesNumber"></p>
+        <p>Group photo</p>
+        <input type="file" id="fileInput" style="display: none;">
+        <div class="group-info-picture" style="background-size: cover; background-position: center; pointer-events: none;"></div>
+        <button class="edit-mode" id="editButton" style="display: none;">Edit</button>
+      </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js" integrity="sha512-luMnTJZ7oEchNDZAtQhgjomP1eZefnl82ruTH/3Oj/Yu5qYtwL7+dVRccACS/Snp1lFXq188XFipHKYE75IaQQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>

@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const socket = io('localhost:3001/menu', {
+  const socket = io('ws://localhost:3001/menu', {
     withCredentials: true,
     transports: ['websocket', 'polling'],
   });
@@ -228,6 +228,22 @@ $(document).ready(function () {
         </a>
       </div>
     `);
+  });
+
+  socket.on('getGroupUpdates', (info) => {
+    const groupObject = $(`#${info.groupId}`);
+
+    if (info.picture) {
+      groupObject.find('.timeline-item-content-image').css({
+        backgroundImage: `url(${info.picture})`,
+      });
+    }
+
+    if (info.groupName) {
+      groupObject
+        .find('.timeline-item-content-text-message')
+        .text(info.groupName);
+    }
   });
 
   socket.on('error', (err) => {

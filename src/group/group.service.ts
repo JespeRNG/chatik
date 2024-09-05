@@ -9,12 +9,16 @@ import { GroupEntity } from './entities/group.entity';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
+import { GroupInfoEntity } from './entities/group-info.entity';
+import { GroupInfoDto } from './dto/group-info.dto';
+import { MessageService } from './message/message.service';
 
 @Injectable()
 export class GroupService {
   constructor(
-    private readonly groupRepository: GroupRepository,
     private readonly userService: UserService,
+    private readonly messageService: MessageService,
+    private readonly groupRepository: GroupRepository,
   ) {}
 
   public async create(
@@ -57,6 +61,30 @@ export class GroupService {
     return group;
   }
 
+  public async findGroupInfo(id: string): Promise<GroupInfoDto> {
+    const group = await this.groupRepository.findInfo(id);
+
+    const participants = await Promise.all(
+      group.participants.map(async (participantId) => {
+        const user = await this.userService.findUserById(participantId);
+        return user.username;
+      }),
+    );
+
+    const creator = (await this.userService.findUserById(group.creatorId))
+      .username;
+
+    const groupInfo = new GroupInfoDto();
+    groupInfo.name = group.name;
+    groupInfo.picture = group.picture;
+    groupInfo.participants = participants;
+    groupInfo.creator = creator;
+    groupInfo.messages = await this.messageService.countMessages(id);
+    groupInfo.creatorId = group.creatorId;
+
+    return groupInfo;
+  }
+
   public async remove(id: string): Promise<GroupEntity> {
     const group = await this.findGroup(id);
     return this.groupRepository.delete(group.id);
@@ -65,9 +93,13 @@ export class GroupService {
   public async updateGroup(
     id: string,
     updateGroupDto: UpdateGroupDto,
-  ): Promise<GroupEntity> {
+  ): Promise<GroupEntity | null> {
     const group = await this.findGroup(id);
-    updateGroupDto.pictureName = `${GROUP_PICTURE_DEFAULT_PATH}/${updateGroupDto.pictureName}`;
+
+    if (updateGroupDto.pictureName !== null) {
+      updateGroupDto.pictureName = `${GROUP_PICTURE_DEFAULT_PATH}/${updateGroupDto.pictureName}`;
+    }
+
     return this.groupRepository.update(group.id, updateGroupDto);
   }
 }

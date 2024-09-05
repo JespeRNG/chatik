@@ -3,6 +3,7 @@ import { GroupEntity } from './entities/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GroupInfoEntity } from './entities/group-info.entity';
 
 @Injectable()
 export class GroupRepository {
@@ -48,6 +49,23 @@ export class GroupRepository {
     });
   }
 
+  public async findInfo(id: string): Promise<GroupInfoEntity | null> {
+    const group = await this.prisma.group.findFirst({
+      where: { id },
+      include: {
+        creator: true,
+        participants: true,
+      },
+    });
+
+    if (!group) return null;
+
+    const participants = group.participants.map(
+      (participant) => participant.userId,
+    );
+    return { ...group, participants };
+  }
+
   public findRelated(userId: string): Promise<GroupEntity[] | null> {
     return this.prisma.group.findMany({
       where: {
@@ -73,12 +91,17 @@ export class GroupRepository {
   ): Promise<GroupEntity> {
     const { name, pictureName: picturePath } = updateGroupDto;
 
+    const updateData: any = {
+      name: name || undefined,
+    };
+
+    if (picturePath !== null) {
+      updateData.picture = picturePath;
+    }
+
     return this.prisma.group.update({
       where: { id },
-      data: {
-        name: name || undefined,
-        picture: picturePath || undefined,
-      },
+      data: updateData,
       include: {
         participants: true,
       },
