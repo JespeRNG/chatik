@@ -110,13 +110,11 @@ $(document).ready(function () {
             </div>
             <div class='timeline-item-content-text'>
               <div class='timeline-item-content-header'>
-                <p class='timeline-item-content-text-sender'></p>
-                <p class='timeline-item-content-text-date'>
-                  
-                </p>
+                <p class='timeline-item-content-text-sender'>${group.lastMessageSender}</p>
+                <p class='timeline-item-content-text-date'>${formatDateToLocalTime(group.lastMessageCreatedAt)}</p>
               </div>
               <p class='timeline-item-content-text-message'>
-                No messages yet.
+                ${group.lastMessage}
               </p>
               <p class='timeline-item-content-text-group-name'>
                 ${group.name}
@@ -185,7 +183,7 @@ $(document).ready(function () {
 
     if (info.groupName) {
       groupObject
-        .find('.timeline-item-content-text-message')
+        .find('.timeline-item-content-text-group-name')
         .text(info.groupName);
     }
   });

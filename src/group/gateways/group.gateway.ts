@@ -10,11 +10,13 @@ import { UseGuards } from '@nestjs/common';
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
 import { Socket, Namespace, Server } from 'socket.io';
+import { RedisService } from 'src/redis/redis.service';
 import { UpdateGroupDto } from '../dto/update-group.dto';
 import { MessageService } from '../message/message.service';
 import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 import { GroupParticipantService } from '../participant/group-participant.service';
+import { group } from 'console';
 
 @UseGuards(SocketAuthGuard)
 @WebSocketGateway(3001, {
@@ -36,6 +38,7 @@ export class GroupGateway implements OnGatewayInit {
   constructor(
     private readonly userService: UserService,
     private readonly groupService: GroupService,
+    private readonly redisService: RedisService,
     private readonly messageService: MessageService,
     private readonly participantService: GroupParticipantService,
   ) {}
@@ -176,6 +179,31 @@ export class GroupGateway implements OnGatewayInit {
         );
 
         this.io.in(payload.groupId).emit('getGroupUpdates', { participants });
+
+        const onlineParticipants =
+          await this.redisService.getSockets(participantIds);
+
+        const lastMessage = await this.messageService.getLastMessage(
+          payload.groupId,
+        );
+        const lastMessageSender = await this.userService.findUserById(
+          lastMessage.senderId,
+        );
+
+        if (onlineParticipants && onlineParticipants.length > 0) {
+          const groupInfo = await this.groupService.findGroup(payload.groupId);
+          console.log(this.io);
+          onlineParticipants.forEach((socketId: string) => {
+            this.menu.to(socketId).emit('sendNewGroup', {
+              id: groupInfo.id,
+              name: groupInfo.name,
+              picture: groupInfo.picture,
+              lastMessage: lastMessage.content,
+              lastMessageCreatedAt: lastMessage.createdAt,
+              lastMessageSender: lastMessageSender.username,
+            });
+          });
+        }
       }
     } catch (err) {
       socket.emit('error', { message: err.message || 'Error.' });

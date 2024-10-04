@@ -1,13 +1,12 @@
 import {
+  Injectable,
   CanActivate,
   ExecutionContext,
-  Injectable,
-  Res,
   UnauthorizedException,
 } from '@nestjs/common';
 import {
-  ACCESS_TOKEN_EXPIRY,
   JWT_REFRESH_SECRET,
+  ACCESS_TOKEN_EXPIRY,
 } from 'src/constants/constants';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
@@ -23,70 +22,98 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req: Request = context.switchToHttp().getRequest();
     const res: Response = context.switchToHttp().getResponse();
-    const accessToken = req.cookies['access_token'];
-    const refreshToken = req.cookies['refresh_token'];
+    const { access_token: accessToken, refresh_token: refreshToken } =
+      req.cookies;
 
     if (!accessToken && !refreshToken) {
       throw new UnauthorizedException('No tokens provided.');
     }
 
     try {
-      const decodedAccessToken = (await this.jwtService.decode(
-        accessToken,
-      )) as any;
-
-      if (decodedAccessToken) {
-        const tokenInRedis = await this.redisService.getAccessToken(
-          decodedAccessToken.sub,
-        );
-        if (tokenInRedis) {
-          req.user = decodedAccessToken;
-          return true;
-        }
+      if (
+        accessToken &&
+        (await this.validateAccessToken(accessToken, req, res))
+      ) {
+        return true;
       }
 
-      if (refreshToken) {
-        try {
-          const decodedRefreshToken = (await this.jwtService.decode(
-            refreshToken,
-          )) as any;
-
-          if (decodedRefreshToken) {
-            const isValidRefreshToken = await this.redisService.getRefreshToken(
-              decodedRefreshToken.sub,
-            );
-            if (isValidRefreshToken) {
-              const username = decodedRefreshToken.username;
-              const newAccessToken = await this.jwtService.signAsync(
-                { sub: decodedRefreshToken.sub, username },
-                { secret: JWT_REFRESH_SECRET, expiresIn: ACCESS_TOKEN_EXPIRY },
-              );
-              await this.redisService.saveTokens(
-                decodedRefreshToken.sub,
-                newAccessToken,
-                refreshToken,
-              );
-              res.cookie('access_token', newAccessToken, {
-                httpOnly: true,
-              });
-              req.user = decodedRefreshToken;
-              return true;
-            }
-          }
-        } catch (refreshErr) {
-          res.redirect('/signin');
-        }
+      if (
+        refreshToken &&
+        (await this.validateRefreshToken(refreshToken, req, res))
+      ) {
+        return true;
       }
-      throw new UnauthorizedException(
-        'The Access token is invalid or has expired.',
-      );
+
+      throw new UnauthorizedException('Invalid or expired tokens.');
     } catch (err) {
-      if (err instanceof UnauthorizedException) {
-        throw err;
-      }
+      this.clearTokens(res);
       throw new UnauthorizedException(
         'An error occurred during token validation.',
       );
     }
+  }
+
+  private async validateAccessToken(
+    token: string,
+    req: Request,
+    res: Response,
+  ): Promise<boolean> {
+    try {
+      const decoded = await this.jwtService.verifyAsync(token);
+      const tokenInRedis = await this.redisService.getAccessToken(decoded.sub);
+
+      if (tokenInRedis) {
+        req.user = decoded;
+        return true;
+      } else {
+        this.clearAccessToken(res);
+      }
+    } catch {
+      this.clearAccessToken(res);
+    }
+    return false;
+  }
+
+  private async validateRefreshToken(
+    token: string,
+    req: Request,
+    res: Response,
+  ): Promise<boolean> {
+    try {
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: JWT_REFRESH_SECRET,
+      });
+      const tokenInRedis = await this.redisService.getRefreshToken(decoded.sub);
+
+      if (tokenInRedis) {
+        const newAccessToken = await this.jwtService.signAsync(
+          { sub: decoded.sub, username: decoded.username },
+          { secret: JWT_REFRESH_SECRET, expiresIn: ACCESS_TOKEN_EXPIRY },
+        );
+
+        await this.redisService.saveTokens(decoded.sub, newAccessToken, token);
+        res.cookie('access_token', newAccessToken, { httpOnly: true });
+        req.user = decoded;
+        return true;
+      } else {
+        this.clearRefreshToken(res);
+      }
+    } catch {
+      this.clearRefreshToken(res);
+    }
+    return false;
+  }
+
+  private clearAccessToken(res: Response) {
+    res.clearCookie('access_token');
+  }
+
+  private clearRefreshToken(res: Response) {
+    res.clearCookie('refresh_token');
+  }
+
+  private clearTokens(res: Response) {
+    this.clearAccessToken(res);
+    this.clearRefreshToken(res);
   }
 }

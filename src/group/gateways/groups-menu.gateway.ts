@@ -4,10 +4,13 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
+import { RedisService } from 'src/redis/redis.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { MessageService } from '../message/message.service';
 import { ConflictException, UseGuards } from '@nestjs/common';
@@ -27,19 +30,29 @@ import { GroupParticipantService } from '../participant/group-participant.servic
     res.end();
   },
 })
-export class GroupsMenuGateway {
+export class GroupsMenuGateway implements OnGatewayDisconnect {
   @WebSocketServer() io: Server;
 
   constructor(
     private readonly userService: UserService,
     private readonly groupService: GroupService,
+    private readonly redisService: RedisService,
     private readonly messageService: MessageService,
     private readonly participantService: GroupParticipantService,
   ) {}
 
+  handleDisconnect(socket: Socket) {
+    const userId = socket.user.sub;
+
+    this.redisService.removeUserSocketId(userId);
+  }
+
   @SubscribeMessage('getRelatedGroups')
   public async getRelatedGroups(@ConnectedSocket() socket: Socket) {
     const userId = socket.user.sub;
+
+    await this.redisService.setUserSocketId(userId, socket.id);
+
     const groups = await this.groupService.findRelated(userId);
 
     const groupsInfo = await Promise.all(

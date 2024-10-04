@@ -81,4 +81,25 @@ export class RedisService {
     return JSON.parse(messages[messages.length - 1]);
   }
   //#endregion
+
+  //#region userSockets
+  public setUserSocketId(userId: string, socketId: string): void {
+    this.redisRepository.hset('user_sockets', userId, socketId);
+  }
+
+  public removeUserSocketId(userId: string): void {
+    this.redisRepository.hdel('user_sockets', userId);
+  }
+
+  public async getSockets(userIds: string[]): Promise<string[]> {
+    const sockets = Promise.all(
+      userIds.map(
+        async (userId) =>
+          await this.redisRepository.hget('user_sockets', userId),
+      ),
+    );
+
+    return sockets;
+  }
+  //#endregion
 }

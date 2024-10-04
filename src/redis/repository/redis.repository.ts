@@ -9,6 +9,22 @@ export class RedisRepository {
     this.redisClient.disconnect();
   }
 
+  public async hset(
+    redisKey: string,
+    key: string,
+    value: string,
+  ): Promise<void> {
+    await this.redisClient.hset(redisKey, key, value);
+  }
+
+  public async hget(redisKey: string, key: string): Promise<string> {
+    return await this.redisClient.hget(redisKey, key);
+  }
+
+  public async hdel(redisKey: string, key: string): Promise<void> {
+    await this.redisClient.hdel(redisKey, key);
+  }
+
   public async get(prefix: string, key: string): Promise<string | null> {
     return this.redisClient.get(`${prefix}:${key}`);
   }
