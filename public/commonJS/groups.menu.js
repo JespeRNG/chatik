@@ -45,63 +45,71 @@ $(document).ready(function () {
   });
 
   socket.on('sendGroupsToClient', (groups) => {
+    console.log(groups);
     let items = [];
+    if (groups) {
+      groups.forEach((el) => {
+        const lastMessage = el.lastMessage || {};
 
-    groups.forEach((el) => {
-      const lastMessage = el.lastMessage || {};
+        let lastMessageCreatedAt = '';
+        let createdAtDate = el.createdAt ? new Date(el.createdAt) : new Date();
 
-      let lastMessageCreatedAt = '';
-      let createdAtDate = el.createdAt ? new Date(el.createdAt) : new Date();
+        if (lastMessage && lastMessage.createdAt) {
+          lastMessageCreatedAt = formatDateToLocalTime(lastMessage.createdAt);
+          createdAtDate = new Date(lastMessage.createdAt);
+        }
 
-      if (lastMessage && lastMessage.createdAt) {
-        lastMessageCreatedAt = formatDateToLocalTime(lastMessage.createdAt);
-        createdAtDate = new Date(lastMessage.createdAt);
-      }
+        const lastMessageContent = lastMessage.content || 'No messages yet.';
 
-      const lastMessageContent = lastMessage.content || 'No messages yet.';
-
-      items.push({
-        id: el.id,
-        html: `
-          <div class='timeline-item' id="${el.id}">
-            <a href="/group?groupId=${el.id}" style="text-decoration: none;">
-              <div class='timeline-item-content'>
-                <div class='timeline-item-content-image' style="background-image: url(${el.picture}); background-size: cover; background-position: center;">
-                </div>
-                <div class='timeline-item-content-text'>
-                  <div class='timeline-item-content-header'>
-                    <p class='timeline-item-content-text-sender'>${el.creatorUsername || ''}</p>
-                    <p class='timeline-item-content-text-date'>
-                      ${lastMessageCreatedAt}
+        items.push({
+          id: el.id,
+          html: `
+            <div class='timeline-item' id="${el.id}">
+              <a href="/group?groupId=${el.id}" style="text-decoration: none;">
+                <div class='timeline-item-content'>
+                  <div class='timeline-item-content-image' style="background-image: url(${el.picture}); background-size: cover; background-position: center;">
+                  </div>
+                  <div class='timeline-item-content-text'>
+                    <div class='timeline-item-content-header'>
+                      <p class='timeline-item-content-text-sender'>${el.creatorUsername || ''}</p>
+                      <p class='timeline-item-content-text-date'>
+                        ${lastMessageCreatedAt}
+                      </p>
+                    </div>
+                    <p class='timeline-item-content-text-message'>
+                      ${lastMessageContent}
+                    </p>
+                    <p class='timeline-item-content-text-group-name'>
+                      ${el.name}
+                    </p>
+                    <p class='timeline-item-content-text-content-author'>
+                      With Author & Viewers
                     </p>
                   </div>
-                  <p class='timeline-item-content-text-message'>
-                    ${lastMessageContent}
-                  </p>
-                  <p class='timeline-item-content-text-group-name'>
-                    ${el.name}
-                  </p>
-                  <p class='timeline-item-content-text-content-author'>
-                    With Author & Viewers
-                  </p>
                 </div>
-              </div>
-            </a>
-          </div>
-        `,
-        createdAt: createdAtDate,
+              </a>
+            </div>
+          `,
+          createdAt: createdAtDate,
+        });
       });
-    });
 
-    items.sort((a, b) => b.createdAt - a.createdAt);
+      items.sort((a, b) => b.createdAt - a.createdAt);
 
-    $('.timeline').empty();
-    items.forEach((item) => {
-      $('.timeline').append(item.html);
-    });
+      $('.timeline').empty();
+      items.forEach((item) => {
+        $('.timeline').append(item.html);
+      });
+    } else {
+      $('.timeline').append(
+        `<h1 id="noGroups_h1" style="margin-top: 80px; color: #4a3f69;" >You have not been added to any group yet<h1>`,
+      );
+    }
   });
 
   socket.on('sendNewGroup', (group) => {
+    $('#noGroups_h1').remove();
+    console.log(group);
     $('.timeline').append(`
       <div class='timeline-item' id=${group.id}>
         <a href="/group?groupId=${group.id}" style="text-decoration: none;">
@@ -110,11 +118,11 @@ $(document).ready(function () {
             </div>
             <div class='timeline-item-content-text'>
               <div class='timeline-item-content-header'>
-                <p class='timeline-item-content-text-sender'>${group.lastMessageSender}</p>
-                <p class='timeline-item-content-text-date'>${formatDateToLocalTime(group.lastMessageCreatedAt)}</p>
+                <p class='timeline-item-content-text-sender'>${group.lastMessageSender ? group.lastMessageSender : ''}</p>
+                <p class='timeline-item-content-text-date'>${group.lastMessageCreatedAt ? formatDateToLocalTime(group.lastMessageCreatedAt) : ''}</p>
               </div>
               <p class='timeline-item-content-text-message'>
-                ${group.lastMessage}
+                ${group.lastMessage ? group.lastMessage : 'No messages yet.'}
               </p>
               <p class='timeline-item-content-text-group-name'>
                 ${group.name}

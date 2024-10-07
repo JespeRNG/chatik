@@ -5,3 +5,4 @@ export const ROUNDS_OF_HASHING = 10;
 export const ACCESS_TOKEN_EXPIRY = '30m';
 export const REFRESH_TOKEN_EXPIRY = '7d';
 export const GROUP_PICTURE_DEFAULT_PATH = '../groupPictures';
+export const USER_SOCKET_REDISKEY = 'user_sockets';

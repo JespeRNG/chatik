@@ -12,12 +12,16 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   public async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
-    return this.userRepository.create({
-      ...createUserDto,
-    });
+    return this.userRepository.create(createUserDto);
   }
 
-  public findAllUsers(): Promise<UserEntity[]> {
+  public async findAllUsers(): Promise<UserEntity[]> {
+    const users = await this.userRepository.findAll();
+
+    if (!users) {
+      throw new NotFoundException('There are no users in DB yet.');
+    }
+
     return this.userRepository.findAll();
   }
 
@@ -30,7 +34,6 @@ export class UserService {
 
   public async findByUsername(username: string): Promise<UserEntity | null> {
     const user = await this.userRepository.findByUsername(username);
-
     if (!user) {
       return null;
     }

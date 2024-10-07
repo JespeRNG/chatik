@@ -17,15 +17,15 @@ export class RedisRepository {
     await this.redisClient.hset(redisKey, key, value);
   }
 
-  public async hget(redisKey: string, key: string): Promise<string> {
-    return await this.redisClient.hget(redisKey, key);
+  public hget(redisKey: string, key: string): Promise<string | null> {
+    return this.redisClient.hget(redisKey, key);
   }
 
   public async hdel(redisKey: string, key: string): Promise<void> {
     await this.redisClient.hdel(redisKey, key);
   }
 
-  public async get(prefix: string, key: string): Promise<string | null> {
+  public get(prefix: string, key: string): Promise<string | null> {
     return this.redisClient.get(`${prefix}:${key}`);
   }
 
@@ -46,23 +46,15 @@ export class RedisRepository {
     await this.redisClient.set(`${prefix}:${key}`, value, 'EX', expiry);
   }
 
-  public async rpush(key: string, ...values: string[]): Promise<number> {
+  public rpush(key: string, ...values: string[]): Promise<number> {
     return this.redisClient.rpush(key, ...values);
   }
 
-  public async lpop(key: string, count = 1): Promise<string[]> {
-    return this.redisClient.lpop(key, count);
-  }
-
-  public async llen(key: string): Promise<number> {
+  public llen(key: string): Promise<number> {
     return this.redisClient.llen(key);
   }
 
-  public async lrange(
-    key: string,
-    start: number,
-    stop: number,
-  ): Promise<string[]> {
+  public lrange(key: string, start: number, stop: number): Promise<string[]> {
     return this.redisClient.lrange(key, start, stop);
   }
 }

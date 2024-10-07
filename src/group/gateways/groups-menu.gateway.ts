@@ -53,10 +53,15 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
 
     await this.redisService.setUserSocketId(userId, socket.id);
 
-    const groups = await this.groupService.findRelated(userId);
+    const relatedGroups = await this.groupService.findRelated(userId);
+
+    if (!relatedGroups) {
+      socket.emit('sendGroupsToClient', null);
+      return;
+    }
 
     const groupsInfo = await Promise.all(
-      groups.map(async (group) => {
+      relatedGroups.map(async (group) => {
         const lastMessage =
           (await this.messageService.getLastMessage(group.id)) || null;
         let creatorUsername = null;

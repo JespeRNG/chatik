@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { USER_SOCKET_REDISKEY } from 'src/constants/constants';
 import { RedisRepository } from './repository/redis.repository';
 import { MessageDataDto } from 'src/group/message/dto/message-data.dto';
 
@@ -7,6 +8,8 @@ export class RedisService {
   constructor(
     @Inject(RedisRepository) private readonly redisRepository: RedisRepository,
   ) {}
+
+  //#region Token
   public async saveTokens(
     userId: string,
     access_token: string,
@@ -26,13 +29,12 @@ export class RedisService {
     );
   }
 
-  //#region Token
-  public async getAccessToken(userId: string) {
-    return await this.redisRepository.get('access_token', userId);
+  public getAccessToken(userId: string): Promise<string | null> {
+    return this.redisRepository.get('access_token', userId);
   }
 
-  public async getRefreshToken(userId: string) {
-    return await this.redisRepository.get('refresh_token', userId);
+  public getRefreshToken(userId: string): Promise<string | null> {
+    return this.redisRepository.get('refresh_token', userId);
   }
 
   public async removeTokens(userId: string) {
@@ -84,18 +86,17 @@ export class RedisService {
 
   //#region userSockets
   public setUserSocketId(userId: string, socketId: string): void {
-    this.redisRepository.hset('user_sockets', userId, socketId);
+    this.redisRepository.hset(USER_SOCKET_REDISKEY, userId, socketId);
   }
 
   public removeUserSocketId(userId: string): void {
-    this.redisRepository.hdel('user_sockets', userId);
+    this.redisRepository.hdel(USER_SOCKET_REDISKEY, userId);
   }
 
   public async getSockets(userIds: string[]): Promise<string[]> {
     const sockets = Promise.all(
-      userIds.map(
-        async (userId) =>
-          await this.redisRepository.hget('user_sockets', userId),
+      userIds.map(async (userId) =>
+        this.redisRepository.hget(USER_SOCKET_REDISKEY, userId),
       ),
     );
 

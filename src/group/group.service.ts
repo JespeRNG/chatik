@@ -3,15 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { GroupInfoDto } from './dto/group-info.dto';
 import { UserService } from 'src/user/user.service';
 import { GroupRepository } from './group.repository';
 import { GroupEntity } from './entities/group.entity';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
-import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
-import { GroupInfoEntity } from './entities/group-info.entity';
-import { GroupInfoDto } from './dto/group-info.dto';
 import { MessageService } from './message/message.service';
+import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 
 @Injectable()
 export class GroupService {
@@ -47,11 +46,18 @@ export class GroupService {
 
   public async findRelated(userId: string): Promise<GroupEntity[] | null> {
     const user = await this.userService.findUserById(userId);
+
     if (!user) {
-      throw new ConflictException('There is no user with such id');
+      throw new ConflictException('There is no user with such id.');
     }
 
-    return await this.groupRepository.findRelated(userId);
+    const relatedGroups = await this.groupRepository.findRelated(userId);
+
+    if (relatedGroups.length === 0) {
+      return null;
+    }
+
+    return relatedGroups;
   }
 
   public async findGroup(id: string): Promise<GroupEntity> {

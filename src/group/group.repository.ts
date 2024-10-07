@@ -66,7 +66,7 @@ export class GroupRepository {
     return { ...group, participants };
   }
 
-  public findRelated(userId: string): Promise<GroupEntity[] | null> {
+  public async findRelated(userId: string): Promise<GroupEntity[]> {
     return this.prisma.group.findMany({
       where: {
         OR: [
