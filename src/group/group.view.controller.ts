@@ -1,9 +1,19 @@
+import {
+  Controller,
+  Get,
+  HttpException,
+  Query,
+  Render,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
 import { GroupService } from './group.service';
 import { AuthGuard } from 'src/auth/guards/auth.guard';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { Controller, Get, Query, Render, UseGuards } from '@nestjs/common';
+import { HttpExceptionFilter } from './filters/http-exception.filter';
 
 @ApiExcludeController()
+@UseFilters(HttpExceptionFilter)
 @Controller()
 export class GroupViewController {
   constructor(private readonly groupService: GroupService) {}

@@ -9,7 +9,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
-import { GroupFilter } from '../filters/group.filter';
+import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
 import { RedisService } from 'src/redis/redis.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { MessageService } from '../message/message.service';
@@ -18,7 +18,7 @@ import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 import { GroupParticipantService } from '../participant/group-participant.service';
 
 @UseGuards(SocketAuthGuard)
-@UseFilters(GroupFilter)
+@UseFilters(GroupWebsocketFilter)
 @WebSocketGateway(3001, {
   namespace: '/menu',
   handlePreflightRequest: (req, res) => {
