@@ -15,7 +15,7 @@ import {
 import * as argon2 from 'argon2';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Token } from './interfaces/token-payload';
+import { TokensDto } from './dto/tokens.dto';
 import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -28,7 +28,7 @@ export class AuthService {
     private redisService: RedisService,
   ) {}
 
-  public async signUp(createUserDto: CreateUserDto): Promise<Token> {
+  public async signUp(createUserDto: CreateUserDto): Promise<TokensDto> {
     const userExists = await this.userService.findByUsername(
       createUserDto.username,
     );
@@ -51,7 +51,7 @@ export class AuthService {
     return tokens;
   }
 
-  public async signIn(username: string, password: string): Promise<Token> {
+  public async signIn(username: string, password: string): Promise<TokensDto> {
     const user = await this.userService.findByUsername(username);
     if (!user) {
       throw new NotFoundException(`No user found for username: ${username}`);
@@ -87,7 +87,7 @@ export class AuthService {
   public async refreshTokens(
     userId: string,
     refreshToken: string,
-  ): Promise<Token> {
+  ): Promise<TokensDto> {
     const user = await this.userService.findUserById(userId);
     if (!user || !user.refreshToken)
       throw new ForbiddenException('Access Denied');
@@ -103,7 +103,10 @@ export class AuthService {
     return tokens;
   }
 
-  private async getTokens(userId: string, username: string): Promise<Token> {
+  private async getTokens(
+    userId: string,
+    username: string,
+  ): Promise<TokensDto> {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         {
