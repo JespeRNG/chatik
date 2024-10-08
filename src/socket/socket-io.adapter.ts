@@ -13,6 +13,7 @@ export class SocketIoAdapter extends IoAdapter {
         credentials: true,
       },
     });
+
     return server;
   }
 }

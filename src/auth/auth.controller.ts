@@ -9,12 +9,11 @@ import {
 import { Request } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
-import { AuthEntity } from './entity/auth.entity';
+import { TokensDto } from './dto/tokens.dto';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { TokensDto } from './dto/tokens.dto';
 
 @ApiTags('api/auth')
 @Controller('api/auth')

@@ -46,7 +46,7 @@ export class AuthService {
       password: hashedPassword,
     });
     const tokens = await this.getTokens(newUser.id, newUser.username);
-    await this.updateRefreshToken(newUser.id, tokens.refresh_token);
+    this.updateRefreshToken(newUser.id, tokens.refresh_token);
 
     return tokens;
   }
@@ -63,7 +63,7 @@ export class AuthService {
     }
 
     const tokens = await this.getTokens(user.id, user.username);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    this.updateRefreshToken(user.id, tokens.refresh_token);
 
     await this.redisService.saveTokens(
       user.id,
@@ -79,7 +79,7 @@ export class AuthService {
 
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await argon2.hash(refreshToken);
-    await this.userService.updateUser(userId, {
+    this.userService.updateUser(userId, {
       refreshToken: hashedRefreshToken,
     });
   }
@@ -99,7 +99,8 @@ export class AuthService {
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
 
     const tokens = await this.getTokens(user.id, user.username);
-    await this.updateRefreshToken(user.id, tokens.refresh_token);
+    this.updateRefreshToken(user.id, tokens.refresh_token);
+
     return tokens;
   }
 

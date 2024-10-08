@@ -6,10 +6,11 @@ import {
   MessageBody,
   OnGatewayInit,
 } from '@nestjs/websockets';
-import { UseGuards } from '@nestjs/common';
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
 import { Socket, Namespace, Server } from 'socket.io';
+import { GroupFilter } from '../filters/group.filter';
+import { UseFilters, UseGuards } from '@nestjs/common';
 import { RedisService } from 'src/redis/redis.service';
 import { UpdateGroupDto } from '../dto/update-group.dto';
 import { MessageService } from '../message/message.service';
@@ -18,6 +19,7 @@ import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 import { GroupParticipantService } from '../participant/group-participant.service';
 
 @UseGuards(SocketAuthGuard)
+@UseFilters(GroupFilter)
 @WebSocketGateway(3001, {
   namespace: '/group',
   handlePreflightRequest: (req, res) => {
