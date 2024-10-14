@@ -23,19 +23,21 @@ export class AuthViewController {
 
   @Get('signup')
   @Render('auth/signup')
-  public signupPage(@Req() req: Request, @Res() res: Response) {
+  public signupPage(@Req() req: Request, @Res() res: Response): void {
     if (req.cookies['access_token']) {
       return res.redirect('/');
     }
+
     return;
   }
 
   @Get('signin')
   @Render('auth/signin')
-  public signinPage(@Req() req: Request, @Res() res: Response) {
+  public signinPage(@Req() req: Request, @Res() res: Response): void {
     if (req.cookies['access_token']) {
       return res.redirect('/');
     }
+
     return;
   }
 
@@ -43,16 +45,20 @@ export class AuthViewController {
   public async signup(
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     const tokens = await this.authService.signUp(createUserDto);
     if (!tokens) {
       throw new ConflictException();
     }
+
     return res.redirect('signin');
   }
 
   @Post('login')
-  public async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+  public async login(
+    @Body() loginDto: LoginDto,
+    @Res() res: Response,
+  ): Promise<void> {
     const tokens = await this.authService.signIn(
       loginDto.username,
       loginDto.password,
@@ -65,17 +71,23 @@ export class AuthViewController {
     res.cookie('access_token', tokens.access_token, {
       httpOnly: true,
       maxAge: 1800000, // 30 minutes in milliseconds
+      secure: true,
+      sameSite: 'none',
     });
+
     res.cookie('refresh_token', tokens.refresh_token, {
       httpOnly: true,
       maxAge: 604800000, // 7 days in milliseconds
+      secure: true,
+      sameSite: 'none',
     });
+
     return res.redirect('/');
   }
 
   @Post('logout')
   @UseGuards(AuthGuard)
-  public logout(@Req() req: Request, @Res() res: Response) {
+  public logout(@Req() req: Request, @Res() res: Response): void {
     this.authService.logout(req.user['sub']);
 
     res.cookie('access_token', '', {
@@ -87,6 +99,6 @@ export class AuthViewController {
       expires: new Date(0),
     });
 
-    res.redirect('/signin');
+    return res.redirect('/signin');
   }
 }
