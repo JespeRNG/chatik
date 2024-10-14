@@ -1,13 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { USER_SOCKET_REDISKEY } from 'src/constants/constants';
+import {
+  ACCESS_TOKEN_REDIS_EXPIRY,
+  REFRESH_TOKEN_REDIS_EXPIRY,
+  USER_SOCKET_REDISKEY,
+} from 'src/constants/constants';
+import { Injectable } from '@nestjs/common';
 import { RedisRepository } from './repository/redis.repository';
 import { MessageDataDto } from 'src/group/message/dto/message-data.dto';
 
 @Injectable()
 export class RedisService {
-  constructor(
-    @Inject(RedisRepository) private readonly redisRepository: RedisRepository,
-  ) {}
+  constructor(private readonly redisRepository: RedisRepository) {}
 
   //#region Token
   public async saveTokens(
@@ -19,13 +21,13 @@ export class RedisService {
       'access_token',
       userId,
       access_token,
-      1800, //30 minutes
+      ACCESS_TOKEN_REDIS_EXPIRY, //30 minutes
     );
     await this.redisRepository.setWithExpiry(
       'refresh_token',
       userId,
       refresh_token,
-      604800, //7 days
+      REFRESH_TOKEN_REDIS_EXPIRY, //7 days
     );
   }
 

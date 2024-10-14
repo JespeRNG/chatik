@@ -108,7 +108,7 @@ export class GroupApiController {
   public async getGroup(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<GroupEntity> {
-    return this.groupService.findGroup(id);
+    return this.groupService.findOne(id);
   }
 
   @Delete(':id')

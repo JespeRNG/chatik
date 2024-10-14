@@ -23,7 +23,7 @@ export class GroupParticipantService {
   ): Promise<GroupParticipantEntity> {
     await this.validateParticipant(groupId, userId);
 
-    const group = await this.groupService.findGroup(groupId);
+    const group = await this.groupService.findOne(groupId);
     if (group.creatorId === userId) {
       throw new ConflictException(
         'Group creator cannot be added to the group.',
@@ -37,7 +37,7 @@ export class GroupParticipantService {
     groupId: string,
     userIds: string[],
   ): Promise<GroupParticipantEntity[]> {
-    const group = await this.groupService.findGroup(groupId);
+    const group = await this.groupService.findOne(groupId);
 
     for (const userId of userIds) {
       await this.validateParticipant(groupId, userId);
@@ -62,7 +62,7 @@ export class GroupParticipantService {
       throw new ConflictException(`Participant doesn't exist in this group.`);
     }
 
-    const group = await this.groupService.findGroup(groupId);
+    const group = await this.groupService.findOne(groupId);
     if (group.creatorId === userId) {
       throw new ConflictException(
         'Group creator cannot be removed from the group.',
@@ -84,7 +84,7 @@ export class GroupParticipantService {
       throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
     }
 
-    const group = await this.groupService.findGroup(groupId);
+    const group = await this.groupService.findOne(groupId);
     if (!group) {
       throw new NotFoundException('Group not found.');
     }

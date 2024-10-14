@@ -4,5 +4,7 @@ export const USER_NOT_FOUND_EXCEPTION = 'User not found.';
 export const ROUNDS_OF_HASHING = 10;
 export const ACCESS_TOKEN_EXPIRY = '30m';
 export const REFRESH_TOKEN_EXPIRY = '7d';
+export const ACCESS_TOKEN_REDIS_EXPIRY = 1800; // 30 minutes
+export const REFRESH_TOKEN_REDIS_EXPIRY = 604800; // 7 days
 export const GROUP_PICTURE_DEFAULT_PATH = '../groupPictures';
 export const USER_SOCKET_REDISKEY = 'user_sockets';

@@ -1,6 +1,3 @@
-import { LoginDto } from './dto/login.dto';
-import { Request, Response } from 'express';
-import { AuthService } from './auth.service';
 import {
   Body,
   ConflictException,
@@ -12,6 +9,9 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { LoginDto } from './dto/login.dto';
+import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';

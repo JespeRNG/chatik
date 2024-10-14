@@ -21,10 +21,12 @@ async function bootstrap() {
   app.set('view engine', '.hbs');
   app.use(cookieParser());
 
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
+
   app.enableCors({
     origin: `http://${process.env.APP_HOST}:${process.env.APP_PORT}`,
+    credentials: true,
   });
-  app.useWebSocketAdapter(new SocketIoAdapter(app));
 
   const config = new DocumentBuilder()
     .setTitle('Chatik')

@@ -52,7 +52,6 @@ $(document).ready(function () {
   });
 
   socket.on('sendGroupsToClient', (groups) => {
-    console.log(groups);
     let items = [];
     if (groups.length > 0) {
       groups.forEach((el) => {

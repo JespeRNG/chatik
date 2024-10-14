@@ -30,7 +30,7 @@ export class GroupViewController {
   public async groupPage(
     @Query('groupId') groupId: string,
   ): Promise<{ name: string; picture: string }> {
-    const { name, picture } = await this.groupService.findGroup(groupId);
+    const { name, picture } = await this.groupService.findOne(groupId);
 
     return { name, picture };
   }

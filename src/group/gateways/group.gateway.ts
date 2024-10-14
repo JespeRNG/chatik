@@ -1,4 +1,11 @@
 import {
+  ConflictException,
+  NotFoundException,
+  ParseUUIDPipe,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
+import {
   WebSocketServer,
   SubscribeMessage,
   WebSocketGateway,
@@ -9,21 +16,14 @@ import {
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
 import { Socket, Namespace, Server } from 'socket.io';
-import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
-import {
-  ConflictException,
-  NotFoundException,
-  ParseUUIDPipe,
-  UseFilters,
-  UseGuards,
-} from '@nestjs/common';
 import { RedisService } from 'src/redis/redis.service';
 import { MessageService } from '../message/message.service';
+import { UpdateGroupMvcDto } from './dto/update-group-mvc.dto';
 import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
-import { GroupParticipantService } from '../participant/group-participant.service';
 import { SocketValidationPipe } from './pipes/socket-validation.pipe';
-import { UpdateGroupMvcDto } from './dto/update-group-mvc.dto';
+import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
+import { GroupParticipantService } from '../participant/group-participant.service';
 
 @UseGuards(SocketAuthGuard)
 @UseFilters(GroupWebsocketFilter)
@@ -134,7 +134,7 @@ export class GroupGateway implements OnGatewayInit {
   public async handleGetGroupInfo(
     @MessageBody() groupId: string,
   ): Promise<void> {
-    const group = await this.groupService.findGroupInfo(groupId);
+    const group = await this.groupService.findInfo(groupId);
 
     this.io.in(groupId).emit('sendGroupInfo', group);
   }
@@ -234,7 +234,7 @@ export class GroupGateway implements OnGatewayInit {
       return;
     }
 
-    const groupInfo = await this.groupService.findGroup(groupId);
+    const groupInfo = await this.groupService.findOne(groupId);
     const lastMessage = await this.messageService.getLastMessage(groupId);
 
     const lastMessageSender = lastMessage

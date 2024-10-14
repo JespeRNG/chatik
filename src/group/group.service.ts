@@ -1,7 +1,6 @@
 import {
-  BadRequestException,
-  ConflictException,
   Injectable,
+  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import { GroupInfoDto } from './dto/group-info.dto';
@@ -61,14 +60,14 @@ export class GroupService {
     return relatedGroups;
   }
 
-  public async findGroup(id: string): Promise<GroupEntity | null> {
+  public async findOne(id: string): Promise<GroupEntity | null> {
     const group = await this.groupRepository.findOne(id);
     if (!group) throw new NotFoundException('Group not found.');
 
     return group;
   }
 
-  public async findGroupInfo(id: string): Promise<GroupInfoDto> {
+  public async findInfo(id: string): Promise<GroupInfoDto> {
     const group = await this.groupRepository.findInfo(id);
 
     const participants = await Promise.all(
@@ -93,7 +92,7 @@ export class GroupService {
   }
 
   public async remove(id: string): Promise<GroupEntity> {
-    const group = await this.findGroup(id);
+    const group = await this.findOne(id);
 
     return this.groupRepository.delete(group.id);
   }
@@ -102,10 +101,16 @@ export class GroupService {
     id: string,
     updateGroupDto: UpdateGroupDto,
   ): Promise<GroupEntity | null> {
-    const group = await this.findGroup(id);
+    const group = await this.findOne(id);
 
     if (updateGroupDto.pictureName !== null) {
       updateGroupDto.pictureName = `${GROUP_PICTURE_DEFAULT_PATH}/${updateGroupDto.pictureName}`;
+    }
+
+    if (updateGroupDto.name === group.name) {
+      throw new ConflictException(
+        `You can't change the group name on the same one.`,
+      );
     }
 
     return this.groupRepository.update(group.id, updateGroupDto);

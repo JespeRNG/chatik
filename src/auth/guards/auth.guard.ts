@@ -7,6 +7,7 @@ import {
 import {
   JWT_REFRESH_SECRET,
   ACCESS_TOKEN_EXPIRY,
+  JWT_ACCESS_SECRET,
 } from 'src/constants/constants';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
@@ -15,8 +16,8 @@ import { RedisService } from 'src/redis/redis.service';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private readonly redisService: RedisService,
     private readonly jwtService: JwtService,
+    private readonly redisService: RedisService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,10 +31,12 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      if (
-        accessToken &&
-        (await this.validateAccessToken(accessToken, req, res))
-      ) {
+      const validatedAccessToken = await this.validateAccessToken(
+        accessToken,
+        req,
+        res,
+      );
+      if (accessToken && validatedAccessToken) {
         return true;
       }
 
@@ -59,7 +62,9 @@ export class AuthGuard implements CanActivate {
     res: Response,
   ): Promise<boolean> {
     try {
-      const decoded = await this.jwtService.verifyAsync(token);
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: JWT_ACCESS_SECRET,
+      });
       const tokenInRedis = await this.redisService.getAccessToken(decoded.sub);
 
       if (tokenInRedis) {
@@ -68,7 +73,7 @@ export class AuthGuard implements CanActivate {
       } else {
         this.clearAccessToken(res);
       }
-    } catch {
+    } catch (err) {
       this.clearAccessToken(res);
     }
     return false;
@@ -104,15 +109,15 @@ export class AuthGuard implements CanActivate {
     return false;
   }
 
-  private clearAccessToken(res: Response) {
+  private clearAccessToken(res: Response): void {
     res.clearCookie('access_token');
   }
 
-  private clearRefreshToken(res: Response) {
+  private clearRefreshToken(res: Response): void {
     res.clearCookie('refresh_token');
   }
 
-  private clearTokens(res: Response) {
+  private clearTokens(res: Response): void {
     this.clearAccessToken(res);
     this.clearRefreshToken(res);
   }

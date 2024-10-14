@@ -1,9 +1,10 @@
 $(document).ready(function () {
+  console.log('doc is ready');
   const socket = io('ws://localhost:3001/group', {
     withCredentials: true,
     transports: ['websocket', 'polling'],
   });
-
+  console.log('socket is ready');
   let currentUserId = null;
 
   $.urlParam = function (name) {
