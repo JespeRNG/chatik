@@ -22,7 +22,7 @@ export class AuthApiController {
 
   @Post('signup')
   @ApiOperation({ summary: 'Create user' })
-  @ApiBody({ type: TokensDto })
+  @ApiBody({ type: CreateUserDto })
   @ApiResponse({
     status: 201,
     type: TokensDto,

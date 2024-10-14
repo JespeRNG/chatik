@@ -1,5 +1,9 @@
-export class TokensDto {
-  access_token: string;
+import { ApiProperty } from '@nestjs/swagger';
 
-  refresh_token: string;
+export class TokensDto {
+  @ApiProperty()
+  readonly access_token: string;
+
+  @ApiProperty()
+  readonly refresh_token: string;
 }

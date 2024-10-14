@@ -39,7 +39,7 @@ export class GroupService {
 
   public async findAll(): Promise<GroupEntity[]> {
     const groups = await this.groupRepository.findAll();
-    if (!groups) throw new NotFoundException('Groups not found.');
+    if (groups.length === 0) throw new NotFoundException('Groups not found.');
 
     return groups;
   }
