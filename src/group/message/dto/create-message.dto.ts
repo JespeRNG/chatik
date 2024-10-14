@@ -5,7 +5,12 @@ export class CreateMessageDto {
   @MaxLength(500)
   @MinLength(1)
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'Message in the group. Should be between 1 and 500 characters.',
+    maxLength: 500,
+    minLength: 1,
+  })
   readonly content: string;
 
   @IsUUID()
