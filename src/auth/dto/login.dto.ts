@@ -6,12 +6,12 @@ export class LoginDto {
   @MinLength(4)
   @IsNotEmpty()
   @ApiProperty()
-  username: string;
+  readonly username: string;
 
   @MaxLength(128)
   @MinLength(6)
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  password: string;
+  readonly password: string;
 }

@@ -13,9 +13,15 @@ import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
 import { RedisService } from 'src/redis/redis.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { MessageService } from '../message/message.service';
-import { ConflictException, UseFilters, UseGuards } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
 import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 import { GroupParticipantService } from '../participant/group-participant.service';
+import { SocketValidationPipe } from './pipes/socket-validation.pipe';
 
 @UseGuards(SocketAuthGuard)
 @UseFilters(GroupWebsocketFilter)
@@ -82,50 +88,58 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
   @SubscribeMessage('receiveNewGroup')
   public async createNewGroup(
     @ConnectedSocket() socket: Socket,
-    @MessageBody()
-    payload: { groupName: string; usersToAdd: string[]; groupPicName: string },
+    @MessageBody(SocketValidationPipe)
+    createGroupDto: CreateGroupDto,
   ) {
-    try {
-      const createGroupDto = new CreateGroupDto();
-      createGroupDto.name = payload.groupName;
-      createGroupDto.pictureName = payload.groupPicName;
+    if (createGroupDto.usersToAdd.length > 0) {
+      const userIds = await Promise.all(
+        createGroupDto.usersToAdd.map(async (username) => {
+          const userId = (await this.userService.findByUsername(username))?.id;
+
+          if (!userId) {
+            throw new NotFoundException(
+              `There is no user with username "${username}"`,
+            );
+          }
+
+          if (userId === socket.user.sub) {
+            throw new ConflictException(
+              `Group creator cannot be a participant.`,
+            );
+          }
+
+          return userId;
+        }),
+      );
 
       const createdGroup = await this.groupService.create(
         createGroupDto,
         socket.user.sub,
       );
 
-      if (payload.usersToAdd.length > 0) {
-        const userIds = await Promise.all(
-          payload.usersToAdd.map(async (username) => {
-            const userId = (await this.userService.findByUsername(username)).id;
+      await this.participantService.createParticipants(
+        createdGroup.id,
+        userIds,
+      );
 
-            if (userId === socket.user.sub) {
-              throw new ConflictException(
-                `Group creator cannot be a participant.`,
-              );
-            }
-            return userId;
-          }),
-        );
-
-        await this.participantService.createParticipants(
-          createdGroup.id,
-          userIds,
-        );
-
-        userIds.forEach((userId) => {
-          const sockets = this.io.sockets;
-          sockets.forEach((userSocket) => {
-            if (userSocket.user.sub === userId) {
-              userSocket.emit('sendNewGroup', createdGroup);
-            }
-          });
+      userIds.forEach((userId) => {
+        const sockets = this.io.sockets;
+        sockets.forEach((userSocket) => {
+          if (userSocket.user.sub === userId) {
+            userSocket.emit('sendNewGroup', createdGroup);
+          }
         });
-      }
+      });
+
       socket.emit('sendNewGroup', createdGroup);
-    } catch (err) {
-      socket.emit('error', { message: err.message || 'Error.' });
+      return;
     }
+
+    const createdGroup = await this.groupService.create(
+      createGroupDto,
+      socket.user.sub,
+    );
+
+    socket.emit('sendNewGroup', createdGroup);
   }
 }

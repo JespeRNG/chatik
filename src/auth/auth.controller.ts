@@ -22,15 +22,7 @@ export class AuthApiController {
 
   @Post('signup')
   @ApiOperation({ summary: 'Create user' })
-  @ApiBody({
-    description: 'User credentials',
-    schema: {
-      example: {
-        username: 'username',
-        password: 'password',
-      },
-    },
-  })
+  @ApiBody({ type: TokensDto })
   @ApiResponse({
     status: 201,
     type: TokensDto,
@@ -40,7 +32,7 @@ export class AuthApiController {
     status: 409,
     description: 'User already exists.',
   })
-  public signup(@Body() createUserDto: CreateUserDto) {
+  public signup(@Body() createUserDto: CreateUserDto): Promise<TokensDto> {
     return this.authService.signUp(createUserDto);
   }
 
@@ -52,7 +44,7 @@ export class AuthApiController {
     description: 'No user found for username: ${username}',
   })
   @ApiResponse({ status: 401, description: 'Invalid password' })
-  public signin(@Body() { username, password }: LoginDto) {
+  public signin(@Body() { username, password }: LoginDto): Promise<TokensDto> {
     return this.authService.signIn(username, password);
   }
 
@@ -61,8 +53,9 @@ export class AuthApiController {
   @ApiOkResponse({ description: 'A user was logged out successfully' })
   @ApiBearerAuth()
   @UseGuards(AccessTokenGuard)
-  public logout(@Req() req: Request) {
+  public logout(@Req() req: Request): { message: string } {
     this.authService.logout(req.user['sub']);
+
     return { message: 'Logged out successfully.' };
   }
 
@@ -73,7 +66,7 @@ export class AuthApiController {
   @ApiResponse({ status: 403, description: 'Access Denied' })
   @ApiBearerAuth()
   @UseGuards(RefreshTokenGuard)
-  public refreshTokens(@Req() req: Request) {
+  public refreshTokens(@Req() req: Request): Promise<TokensDto> {
     const userId = req.user['sub'];
     const refreshToken = req.user['refreshToken'];
 

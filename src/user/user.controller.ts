@@ -9,7 +9,14 @@ import {
 import { UserService } from './user.service';
 import { UserEntity } from './entities/user.entity';
 import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
-import { Controller, Get, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  Delete,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 
 @ApiBearerAuth()
 @ApiTags('api/users')
@@ -27,8 +34,9 @@ export class UserApiController {
     description: 'All user successfully returned.',
   })
   @ApiResponse({ status: 409, description: 'There are no users in DB yet.' })
-  public async getUsers() {
+  public async getUsers(): Promise<UserEntity[]> {
     const users = await this.userService.findAllUsers();
+
     return users.map((user) => new UserEntity(user));
   }
 
@@ -47,7 +55,9 @@ export class UserApiController {
     description: 'User was successfully created.',
   })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  public async getUser(@Param('id') userId: string) {
+  public async getUser(
+    @Param('id', ParseUUIDPipe) userId: string,
+  ): Promise<UserEntity> {
     return new UserEntity(await this.userService.findUserById(userId));
   }
 
@@ -63,7 +73,9 @@ export class UserApiController {
   @UseGuards(AccessTokenGuard)
   @ApiOkResponse({ type: UserEntity })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  public async deleteUser(@Param('id') id: string) {
+  public async deleteUser(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<UserEntity> {
     return new UserEntity(await this.userService.removeUser(id));
   }
 }

@@ -24,7 +24,12 @@ export class GroupRepository {
         },
       },
       include: {
-        creator: true,
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
         participants: true,
       },
     });
@@ -33,7 +38,12 @@ export class GroupRepository {
   public findAll(): Promise<GroupEntity[]> {
     return this.prisma.group.findMany({
       include: {
-        creator: true,
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
         participants: true,
       },
     });
@@ -43,7 +53,12 @@ export class GroupRepository {
     return this.prisma.group.findFirst({
       where: { id },
       include: {
-        creator: true,
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
         participants: true,
       },
     });
@@ -112,7 +127,12 @@ export class GroupRepository {
     return this.prisma.group.delete({
       where: { id },
       include: {
-        creator: true,
+        creator: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
         participants: true,
       },
     });

@@ -6,11 +6,11 @@ export class UpdateGroupDto {
   @MinLength(4)
   @IsOptional()
   @ApiProperty({ description: 'Name of the group.' })
-  name: string;
+  name?: string;
 
   @MaxLength(64)
   @MinLength(4)
   @IsOptional()
   @ApiProperty({ description: 'Group picture path to file.' })
-  pictureName: string;
+  pictureName?: string;
 }

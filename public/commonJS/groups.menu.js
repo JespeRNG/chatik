@@ -26,7 +26,7 @@ $(document).ready(function () {
   }
 
   $('#createGroupButton').on('click', function () {
-    const groupName = $('#groupNameInput').val().trim();
+    const name = $('#groupNameInput').val().trim();
     const usersToAdd = $('#participantsInput')
       .val()
       .trim()
@@ -34,9 +34,16 @@ $(document).ready(function () {
       .map((user) => user.trim())
       .filter((user) => user.length > 0);
 
-    const groupPicName = $('#fileInput')[0].files[0].name;
+    const pictureName = $('#fileInput')[0].files[0]
+      ? $('#fileInput')[0].files[0].name
+      : null;
 
-    socket.emit('receiveNewGroup', { groupName, usersToAdd, groupPicName });
+    if (!name) {
+      alert('Unable to create group. There is no group name.');
+      return;
+    }
+
+    socket.emit('receiveNewGroup', { name, pictureName, usersToAdd });
     $('#popupContainer').fadeOut();
   });
 
@@ -47,7 +54,7 @@ $(document).ready(function () {
   socket.on('sendGroupsToClient', (groups) => {
     console.log(groups);
     let items = [];
-    if (groups) {
+    if (groups.length > 0) {
       groups.forEach((el) => {
         const lastMessage = el.lastMessage || {};
 
@@ -109,7 +116,6 @@ $(document).ready(function () {
 
   socket.on('sendNewGroup', (group) => {
     $('#noGroups_h1').remove();
-    console.log(group);
     $('.timeline').append(`
       <div class='timeline-item' id=${group.id}>
         <a href="/group?groupId=${group.id}" style="text-decoration: none;">
@@ -138,7 +144,6 @@ $(document).ready(function () {
   });
 
   socket.on('sendNewMessage', (msg) => {
-    console.log(msg);
     const groupDiv = $(`#${msg.groupId}`);
     const groupPicture = groupDiv
       .find('.timeline-item-content-image')

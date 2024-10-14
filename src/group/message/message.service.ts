@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
 import { RedisService } from 'src/redis/redis.service';
 import { MessageDataDto } from './dto/message-data.dto';
 import { MessageRepository } from './message.repository';
 import { MessageEntity } from './entities/message.entity';
-import { UserRepository } from 'src/user/user.repository';
 import { CreateMessageDto } from './dto/create-message.dto';
 
 @Injectable()
 export class MessageService {
   constructor(
     private readonly redisService: RedisService,
-    private readonly userRepository: UserRepository,
+    private readonly userService: UserService,
     private readonly messageRepository: MessageRepository,
   ) {}
 
@@ -23,12 +23,14 @@ export class MessageService {
   public async saveMessagesToDb(
     groupId: string,
     createMessageDtos: CreateMessageDto[],
-  ) {
+  ): Promise<void> {
     await this.messageRepository.createMany(groupId, createMessageDtos);
   }
 
   public async getSenderUsername(senderId: string): Promise<string> {
-    return (await this.userRepository.findById(senderId)).username;
+    const { username } = await this.userService.findUserById(senderId);
+
+    return username;
   }
 
   public async addMessage(message: MessageDataDto): Promise<MessageDataDto> {

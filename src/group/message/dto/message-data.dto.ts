@@ -4,16 +4,16 @@ export class MessageDataDto {
   @MaxLength(500)
   @MinLength(1)
   @IsNotEmpty()
-  content: string;
+  readonly content: string;
 
   @IsNotEmpty()
-  createdAt: Date;
-
-  @IsUUID()
-  @IsNotEmpty()
-  senderId: string;
+  readonly createdAt: Date;
 
   @IsUUID()
   @IsNotEmpty()
-  groupId: string;
+  readonly senderId: string;
+
+  @IsUUID()
+  @IsNotEmpty()
+  readonly groupId: string;
 }

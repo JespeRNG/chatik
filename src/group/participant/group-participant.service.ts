@@ -75,7 +75,10 @@ export class GroupParticipantService {
     return this.groupParticipantRepository.delete(participantId);
   }
 
-  private async validateParticipant(groupId: string, userId: string) {
+  private async validateParticipant(
+    groupId: string,
+    userId: string,
+  ): Promise<void> {
     const user = await this.userService.findUserById(userId);
     if (!user) {
       throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);

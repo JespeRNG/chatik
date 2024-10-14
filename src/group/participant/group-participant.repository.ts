@@ -39,7 +39,7 @@ export class GroupParticipantRepository {
     return createdParticipants;
   }
 
-  public findAll() {
+  public findAll(): Promise<GroupParticipantEntity[]> {
     return this.prisma.participant.findMany({
       include: {
         group: true,

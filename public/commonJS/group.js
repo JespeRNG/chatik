@@ -203,9 +203,9 @@ $(document).ready(function () {
     if (groupName || participants || picture) {
       socket.emit('updateGroupInfo', {
         groupId,
-        groupName,
-        participants,
-        picture,
+        name: groupName,
+        usersToAdd: participants,
+        pictureName: picture,
       });
 
       $('#fileInput').val('');

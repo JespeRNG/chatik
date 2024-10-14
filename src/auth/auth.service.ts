@@ -23,8 +23,8 @@ import { CreateUserDto } from 'src/user/dto/create-user.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
     private jwtService: JwtService,
+    private userService: UserService,
     private redisService: RedisService,
   ) {}
 
@@ -73,11 +73,14 @@ export class AuthService {
     return tokens;
   }
 
-  public async logout(userId: string) {
+  public async logout(userId: string): Promise<void> {
     await this.redisService.removeTokens(userId);
   }
 
-  private async updateRefreshToken(userId: string, refreshToken: string) {
+  private async updateRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
     const hashedRefreshToken = await argon2.hash(refreshToken);
     this.userService.updateUser(userId, {
       refreshToken: hashedRefreshToken,

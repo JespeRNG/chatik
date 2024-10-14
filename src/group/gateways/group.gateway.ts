@@ -10,13 +10,20 @@ import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
 import { Socket, Namespace, Server } from 'socket.io';
 import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import {
+  ConflictException,
+  NotFoundException,
+  ParseUUIDPipe,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
 import { RedisService } from 'src/redis/redis.service';
-import { UpdateGroupDto } from '../dto/update-group.dto';
 import { MessageService } from '../message/message.service';
 import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
 import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 import { GroupParticipantService } from '../participant/group-participant.service';
+import { SocketValidationPipe } from './pipes/socket-validation.pipe';
+import { UpdateGroupMvcDto } from './dto/update-group-mvc.dto';
 
 @UseGuards(SocketAuthGuard)
 @UseFilters(GroupWebsocketFilter)
@@ -50,9 +57,9 @@ export class GroupGateway implements OnGatewayInit {
 
   @SubscribeMessage('joinToGroup')
   public handleJoinToGroup(
-    @MessageBody() groupId: string,
+    @MessageBody(ParseUUIDPipe) groupId: string,
     @ConnectedSocket() socket: Socket,
-  ) {
+  ): void {
     socket.join(groupId);
     socket.emit('user', socket.user.sub);
   }
@@ -68,7 +75,7 @@ export class GroupGateway implements OnGatewayInit {
       groupId: string;
       content: string;
     },
-  ) {
+  ): Promise<void> {
     const msg = await this.messageService.addMessage({
       content,
       groupId,
@@ -100,7 +107,7 @@ export class GroupGateway implements OnGatewayInit {
   public async handleSendAllMessages(
     @ConnectedSocket() socket: Socket,
     @MessageBody() groupId,
-  ) {
+  ): Promise<void> {
     const allMessages = await Promise.all(
       (await this.messageService.getAllMessagesForGroup(groupId)).map(
         async (x) => {
@@ -124,7 +131,9 @@ export class GroupGateway implements OnGatewayInit {
   }
 
   @SubscribeMessage('getGroupInfo')
-  public async handleGetGroupInfo(@MessageBody() groupId: string) {
+  public async handleGetGroupInfo(
+    @MessageBody() groupId: string,
+  ): Promise<void> {
     const group = await this.groupService.findGroupInfo(groupId);
 
     this.io.in(groupId).emit('sendGroupInfo', group);
@@ -133,81 +142,123 @@ export class GroupGateway implements OnGatewayInit {
   @SubscribeMessage('updateGroupInfo')
   public async handleUpdateGroupInfo(
     @ConnectedSocket() socket: Socket,
-    @MessageBody()
-    payload: {
-      groupId;
-      groupName;
-      participants;
-      picture;
-    },
-  ) {
-    try {
-      if (payload.groupName || payload.picture) {
-        const updateGroupDto = new UpdateGroupDto();
-        updateGroupDto.name = payload.groupName;
-        updateGroupDto.pictureName = payload.picture;
+    @MessageBody(SocketValidationPipe) updateGroupDto: UpdateGroupMvcDto,
+  ): Promise<void> {
+    if (updateGroupDto.name || updateGroupDto.pictureName) {
+      await this.updateGroupInfo(updateGroupDto);
+    }
 
-        await this.groupService.updateGroup(payload.groupId, updateGroupDto);
-
-        const updatedInfo: any = {
-          groupId: payload.groupId,
-        };
-
-        if (payload.groupName) {
-          updatedInfo.groupName = payload.groupName;
-        }
-
-        if (payload.picture) {
-          updatedInfo.picture = `${GROUP_PICTURE_DEFAULT_PATH}/${payload.picture}`;
-        }
-
-        this.io.in(payload.groupId).emit('getGroupUpdates', updatedInfo);
-        this.menu.emit('getGroupUpdates', updatedInfo);
-      }
-
-      if (payload.participants) {
-        const participantIds = await Promise.all(
-          payload.participants.map(async (participant) => {
-            return (await this.userService.findByUsername(participant)).id;
-          }),
-        );
-
-        const participants = payload.participants;
-
-        await this.participantService.createParticipants(
-          payload.groupId,
-          participantIds,
-        );
-
-        this.io.in(payload.groupId).emit('getGroupUpdates', { participants });
-
-        const onlineParticipants =
-          await this.redisService.getSockets(participantIds);
-
-        const lastMessage = await this.messageService.getLastMessage(
-          payload.groupId,
-        );
-        const lastMessageSender = await this.userService.findUserById(
-          lastMessage.senderId,
-        );
-
-        if (onlineParticipants && onlineParticipants.length > 0) {
-          const groupInfo = await this.groupService.findGroup(payload.groupId);
-          console.log(this.io);
-          onlineParticipants.forEach((socketId: string) => {
-            this.menu.to(socketId).emit('sendNewGroup', {
-              id: groupInfo.id,
-              name: groupInfo.name,
-              picture: groupInfo.picture,
-              lastMessage: lastMessage.content,
-              lastMessageCreatedAt: lastMessage.createdAt,
-              lastMessageSender: lastMessageSender.username,
-            });
-          });
-        }
-      }
-    } catch (err) {
-      socket.emit('error', { message: err.message || 'Error.' });
+    if (updateGroupDto.usersToAdd) {
+      await this.addParticipantsToGroup(socket, updateGroupDto);
     }
   }
+
+  //#region private methods
+  private async updateGroupInfo(
+    updateGroupDto: UpdateGroupMvcDto,
+  ): Promise<void> {
+    await this.groupService.updateGroup(updateGroupDto.groupId, updateGroupDto);
+
+    const updatedInfo = this.createUpdatedInfo(updateGroupDto);
+
+    this.io.in(updateGroupDto.groupId).emit('getGroupUpdates', updatedInfo);
+    this.menu.emit('getGroupUpdates', updatedInfo);
+  }
+
+  private createUpdatedInfo(updateGroupDto: UpdateGroupMvcDto): {
+    groupId: string;
+    groupName: string;
+    picture;
+  } {
+    return {
+      groupId: updateGroupDto.groupId,
+      ...(updateGroupDto.name && { groupName: updateGroupDto.name }),
+      ...(updateGroupDto.pictureName && {
+        picture: `${GROUP_PICTURE_DEFAULT_PATH}/${updateGroupDto.pictureName}`,
+      }),
+    };
+  }
+
+  private async addParticipantsToGroup(
+    socket: Socket,
+    updateGroupDto: UpdateGroupMvcDto,
+  ): Promise<void> {
+    const participantIds = await this.getParticipantIds(
+      socket,
+      updateGroupDto.usersToAdd,
+    );
+
+    await this.participantService.createParticipants(
+      updateGroupDto.groupId,
+      participantIds,
+    );
+
+    this.io
+      .in(updateGroupDto.groupId)
+      .emit('getGroupUpdates', { participants: updateGroupDto.usersToAdd });
+
+    await this.notifyOnlineParticipants(updateGroupDto.groupId, participantIds);
+  }
+
+  private async getParticipantIds(
+    socket: Socket,
+    usersToAdd: string[],
+  ): Promise<string[]> {
+    return Promise.all(
+      usersToAdd.map(async (participant) => {
+        const userId = (await this.userService.findByUsername(participant))?.id;
+
+        if (!userId) {
+          throw new NotFoundException(
+            `There is no user with username "${participant}"`,
+          );
+        }
+
+        if (userId === socket.user.sub) {
+          throw new ConflictException(`Group creator cannot be a participant.`);
+        }
+
+        return userId;
+      }),
+    );
+  }
+
+  private async notifyOnlineParticipants(
+    groupId: string,
+    participantIds: string[],
+  ): Promise<void> {
+    const onlineParticipants =
+      await this.redisService.getSockets(participantIds);
+
+    if (!onlineParticipants || onlineParticipants.length === 0) {
+      return;
+    }
+
+    const groupInfo = await this.groupService.findGroup(groupId);
+    const lastMessage = await this.messageService.getLastMessage(groupId);
+
+    const lastMessageSender = lastMessage
+      ? await this.userService.findUserById(lastMessage.senderId)
+      : null;
+
+    const messageContent = lastMessage ? lastMessage.content : null;
+    const messageCreatedAt = lastMessage ? lastMessage.createdAt : null;
+    const messageSenderUsername = lastMessageSender
+      ? lastMessageSender.username
+      : null;
+
+    const payload = {
+      id: groupInfo.id,
+      name: groupInfo.name,
+      picture: groupInfo.picture,
+      lastMessage: messageContent,
+      lastMessageCreatedAt: messageCreatedAt,
+      lastMessageSender: messageSenderUsername,
+    };
+
+    onlineParticipants.forEach((socketId: string) => {
+      this.menu.to(socketId).emit('sendNewGroup', payload);
+    });
+  }
+  //#endregion
 }

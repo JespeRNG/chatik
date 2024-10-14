@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  HttpException,
   Query,
   Render,
   UseFilters,
@@ -21,7 +20,7 @@ export class GroupViewController {
   @Get('/')
   @UseGuards(AuthGuard)
   @Render('groups/groups-menu')
-  public groupsMenuPage() {
+  public groupsMenuPage(): void {
     return;
   }
 

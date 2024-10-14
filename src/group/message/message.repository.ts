@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MessageEntity } from './entities/message.entity';
@@ -17,11 +18,11 @@ export class MessageRepository {
     });
   }
 
-  public async createMany(
+  public createMany(
     groupId: string,
     messages: CreateMessageDto[],
-  ): Promise<void> {
-    await this.prisma.message.createMany({
+  ): Promise<Prisma.BatchPayload> {
+    return this.prisma.message.createMany({
       data: messages.map((msg) => ({
         content: msg.content,
         senderId: msg.senderId,

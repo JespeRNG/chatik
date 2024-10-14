@@ -10,18 +10,18 @@ export class CreateUserDto {
     minLength: 4,
     maxLength: 16,
   })
-  username: string;
+  readonly username: string;
 
   @MaxLength(128)
   @MinLength(6)
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    description: 'Username should be between 4 and 16 characters.',
-    minLength: 4,
+    description: 'password should be between 6 and 128 characters.',
+    minLength: 6,
     maxLength: 128,
   })
-  password: string;
+  readonly password: string;
 
   refreshToken: string;
 }

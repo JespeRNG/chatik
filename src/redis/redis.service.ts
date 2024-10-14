@@ -14,7 +14,7 @@ export class RedisService {
     userId: string,
     access_token: string,
     refresh_token: string,
-  ) {
+  ): Promise<void> {
     await this.redisRepository.setWithExpiry(
       'access_token',
       userId,
@@ -37,7 +37,7 @@ export class RedisService {
     return this.redisRepository.get('refresh_token', userId);
   }
 
-  public async removeTokens(userId: string) {
+  public async removeTokens(userId: string): Promise<void> {
     await this.redisRepository.delete('access_token', userId);
     await this.redisRepository.delete('refresh_token', userId);
   }
@@ -48,12 +48,15 @@ export class RedisService {
     message: MessageDataDto,
   ): Promise<MessageDataDto> {
     const cacheKey = `group:${message.groupId}:messages`;
+
     await this.redisRepository.rpush(cacheKey, JSON.stringify(message));
+
     return message;
   }
 
   public async getMessagesCount(groupId: string): Promise<number> {
     const cacheKey = `group:${groupId}:messages`;
+
     return await this.redisRepository.llen(cacheKey);
   }
 
@@ -62,11 +65,13 @@ export class RedisService {
   ): Promise<MessageDataDto[]> {
     const cacheKey = `group:${groupId}:messages`;
     const allMessages = await this.redisRepository.lrange(cacheKey, 0, -1);
+
     return allMessages.map((msg) => JSON.parse(msg));
   }
 
   public async clearMessagesCache(groupId: string): Promise<void> {
     const cacheKey = `group:${groupId}:messages`;
+
     await this.redisRepository.clearMessagesCache(cacheKey);
   }
 

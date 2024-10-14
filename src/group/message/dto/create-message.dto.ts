@@ -6,17 +6,17 @@ export class CreateMessageDto {
   @MinLength(1)
   @IsNotEmpty()
   @ApiProperty()
-  content: string;
+  readonly content: string;
 
   @IsUUID()
   @IsNotEmpty()
   @ApiProperty()
-  senderId: string;
+  readonly senderId: string;
 
   @IsUUID()
   @IsNotEmpty()
   @ApiProperty()
-  groupId: string;
+  readonly groupId: string;
 
-  createdAt: Date;
+  readonly createdAt: Date;
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -44,7 +45,7 @@ export class GroupService {
     return groups;
   }
 
-  public async findRelated(userId: string): Promise<GroupEntity[] | null> {
+  public async findRelated(userId: string): Promise<GroupEntity[]> {
     const user = await this.userService.findUserById(userId);
 
     if (!user) {
@@ -54,13 +55,13 @@ export class GroupService {
     const relatedGroups = await this.groupRepository.findRelated(userId);
 
     if (relatedGroups.length === 0) {
-      return null;
+      return [];
     }
 
     return relatedGroups;
   }
 
-  public async findGroup(id: string): Promise<GroupEntity> {
+  public async findGroup(id: string): Promise<GroupEntity | null> {
     const group = await this.groupRepository.findOne(id);
     if (!group) throw new NotFoundException('Group not found.');
 
@@ -93,6 +94,7 @@ export class GroupService {
 
   public async remove(id: string): Promise<GroupEntity> {
     const group = await this.findGroup(id);
+
     return this.groupRepository.delete(group.id);
   }
 
