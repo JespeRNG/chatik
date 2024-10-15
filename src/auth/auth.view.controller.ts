@@ -13,6 +13,7 @@ import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ApiExcludeController } from '@nestjs/swagger';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 
@@ -54,6 +55,7 @@ export class AuthViewController {
     return res.redirect('signin');
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('login')
   public async login(
     @Body() loginDto: LoginDto,

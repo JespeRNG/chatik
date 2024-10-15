@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { TokensDto } from './dto/tokens.dto';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { AccessTokenGuard } from './guards/accessToken.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
@@ -37,6 +38,7 @@ export class AuthApiController {
   }
 
   @Post('signin')
+  @UseGuards(ThrottlerGuard)
   @ApiOperation({ summary: 'Sign in and return tokens' })
   @ApiOkResponse({ type: TokensDto })
   @ApiResponse({
@@ -44,6 +46,10 @@ export class AuthApiController {
     description: 'No user found for username: ${username}',
   })
   @ApiResponse({ status: 401, description: 'Invalid password' })
+  @ApiResponse({
+    status: 429,
+    description: 'ThrottlerException: Too Many Requests',
+  })
   public signin(@Body() { username, password }: LoginDto): Promise<TokensDto> {
     return this.authService.signIn(username, password);
   }
