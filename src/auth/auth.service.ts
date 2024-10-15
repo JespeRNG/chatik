@@ -45,7 +45,7 @@ export class AuthService {
       ...createUserDto,
       password: hashedPassword,
     });
-    const tokens = await this.getTokens(newUser.id, newUser.username);
+    const tokens = await this.createTokens(newUser.id, newUser.username);
     this.updateRefreshToken(newUser.id, tokens.refresh_token);
 
     return tokens;
@@ -53,6 +53,7 @@ export class AuthService {
 
   public async signIn(username: string, password: string): Promise<TokensDto> {
     const user = await this.userService.findByUsername(username);
+
     if (!user) {
       throw new NotFoundException(`No user found for username: ${username}`);
     }
@@ -62,7 +63,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    const tokens = await this.getTokens(user.id, user.username);
+    const tokens = await this.createTokens(user.id, user.username);
     this.updateRefreshToken(user.id, tokens.refresh_token);
 
     await this.redisService.saveTokens(
@@ -101,13 +102,13 @@ export class AuthService {
     );
     if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
 
-    const tokens = await this.getTokens(user.id, user.username);
+    const tokens = await this.createTokens(user.id, user.username);
     this.updateRefreshToken(user.id, tokens.refresh_token);
 
     return tokens;
   }
 
-  private async getTokens(
+  private async createTokens(
     userId: string,
     username: string,
   ): Promise<TokensDto> {

@@ -20,7 +20,7 @@ export class MessageService {
     return this.messageRepository.create(createMessageDto);
   }
 
-  public async saveMessagesToDb(
+  private async saveMessagesToDb(
     groupId: string,
     createMessageDtos: CreateMessageDto[],
   ): Promise<void> {
