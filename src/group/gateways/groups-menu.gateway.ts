@@ -1,4 +1,10 @@
 import {
+  ConflictException,
+  NotFoundException,
+  UseFilters,
+  UseGuards,
+} from '@nestjs/common';
+import {
   ConnectedSocket,
   WebSocketServer,
   SubscribeMessage,
@@ -9,21 +15,15 @@ import {
 import { Socket, Server } from 'socket.io';
 import { GroupService } from '../group.service';
 import { UserService } from 'src/user/user.service';
-import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
 import { RedisService } from 'src/redis/redis.service';
 import { CreateGroupDto } from '../dto/create-group.dto';
 import { MessageService } from '../message/message.service';
-import {
-  ConflictException,
-  NotFoundException,
-  UseFilters,
-  UseGuards,
-} from '@nestjs/common';
-import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
-import { GroupParticipantService } from '../participant/group-participant.service';
+import { CookieAuthGuard } from 'src/auth/guards/cookie-auth.guard';
 import { SocketValidationPipe } from './pipes/socket-validation.pipe';
+import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
+import { GroupParticipantService } from '../participant/group-participant.service';
 
-@UseGuards(SocketAuthGuard)
+@UseGuards(CookieAuthGuard)
 @UseFilters(GroupWebsocketFilter)
 @WebSocketGateway(3001, {
   namespace: '/menu',
@@ -49,14 +49,14 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
   ) {}
 
   handleDisconnect(socket: Socket) {
-    const userId = socket.user.sub;
+    const userId = socket.user['sub'];
 
     this.redisService.removeUserSocketId(userId);
   }
 
   @SubscribeMessage('getRelatedGroups')
   public async getRelatedGroups(@ConnectedSocket() socket: Socket) {
-    const userId = socket.user.sub;
+    const userId = socket.user['sub'];
 
     await this.redisService.setUserSocketId(userId, socket.id);
 
@@ -102,7 +102,7 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
             );
           }
 
-          if (userId === socket.user.sub) {
+          if (userId === socket.user['sub']) {
             throw new ConflictException(
               `Group creator cannot be a participant.`,
             );
@@ -114,7 +114,7 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
 
       const createdGroup = await this.groupService.create(
         createGroupDto,
-        socket.user.sub,
+        socket.user['sub'],
       );
 
       await this.participantService.createParticipants(
@@ -125,7 +125,7 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
       userIds.forEach((userId) => {
         const sockets = this.io.sockets;
         sockets.forEach((userSocket) => {
-          if (userSocket.user.sub === userId) {
+          if (userSocket.user['sub'] === userId) {
             userSocket.emit('sendNewGroup', createdGroup);
           }
         });
@@ -137,7 +137,7 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
 
     const createdGroup = await this.groupService.create(
       createGroupDto,
-      socket.user.sub,
+      socket.user['sub'],
     );
 
     socket.emit('sendNewGroup', createdGroup);

@@ -1,4 +1,12 @@
 import {
+  Controller,
+  Get,
+  Param,
+  Delete,
+  UseGuards,
+  ParseUUIDPipe,
+} from '@nestjs/common';
+import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
@@ -8,26 +16,18 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserEntity } from './entities/user.entity';
-import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
-import {
-  Controller,
-  Get,
-  Param,
-  Delete,
-  UseGuards,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { HeaderAuthGuard } from 'src/auth/guards/header-auth.guard';
 
 @ApiBearerAuth()
 @ApiTags('api/users')
 @Controller('api/users')
+@UseGuards(HeaderAuthGuard)
 export class UserApiController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all users' })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({
     type: UserEntity,
     isArray: true,
@@ -49,7 +49,6 @@ export class UserApiController {
     description: 'ID of the user',
     type: String,
   })
-  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({
     type: UserEntity,
     description: 'User was successfully created.',
@@ -70,7 +69,6 @@ export class UserApiController {
     description: 'ID of the user',
     type: String,
   })
-  @UseGuards(AccessTokenGuard)
   @ApiOkResponse({ type: UserEntity })
   @ApiResponse({ status: 404, description: 'User not found.' })
   public async deleteUser(

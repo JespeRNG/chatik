@@ -13,12 +13,21 @@ model User {
   username     String        @unique
   password     String
   createdAt    DateTime      @default(now())
-  refreshToken String?
   createdChats Group[]
   participant  Participant[]
   Message      Message[]
 
   @@map("users")
+}
+
+model TokenWhiteList {
+  id           String   @id @default(uuid())
+  userId       String
+  refreshToken String   @unique
+  deviceInfo   String
+  createdAt    DateTime @default(now())
+
+  @@map("token_whitelist")
 }
 
 model Group {

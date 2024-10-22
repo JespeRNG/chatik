@@ -11,7 +11,7 @@ export const roundsOfHashing = 10;
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  public async createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
+  public createUser(createUserDto: CreateUserDto): Promise<UserEntity> {
     return this.userRepository.create(createUserDto);
   }
 
@@ -41,17 +41,19 @@ export class UserService {
     return user;
   }
 
-  public async updateUser(
+  /* public async updateUser(
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<UserEntity> {
     const user = await this.userRepository.findByUsername(
       updateUserDto.username,
     );
-    if (!user) throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+    if (!user) {
+      throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
+    }
 
     return this.userRepository.update(id, updateUserDto);
-  }
+  } */
 
   public async removeUser(userId: string): Promise<UserEntity> {
     const { id } = await this.findUserById(userId);

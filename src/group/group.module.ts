@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { GroupService } from './group.service';
 import { UserModule } from 'src/user/user.module';
 import { GroupRepository } from './group.repository';
@@ -32,6 +31,6 @@ import { GroupParticipantRepository } from './participant/group-participant.repo
     GroupParticipantService,
     GroupParticipantRepository,
   ],
-  imports: [PrismaModule, UserModule, JwtModule, GroupModule, RedisModule],
+  imports: [PrismaModule, UserModule, GroupModule, RedisModule],
 })
 export class GroupModule {}

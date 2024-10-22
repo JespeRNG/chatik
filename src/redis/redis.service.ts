@@ -11,40 +11,6 @@ import { MessageDataDto } from 'src/group/message/dto/message-data.dto';
 export class RedisService {
   constructor(private readonly redisRepository: RedisRepository) {}
 
-  //#region Token
-  public async saveTokens(
-    userId: string,
-    access_token: string,
-    refresh_token: string,
-  ): Promise<void> {
-    await this.redisRepository.setWithExpiry(
-      'access_token',
-      userId,
-      access_token,
-      ACCESS_TOKEN_REDIS_EXPIRY, //30 minutes
-    );
-    await this.redisRepository.setWithExpiry(
-      'refresh_token',
-      userId,
-      refresh_token,
-      REFRESH_TOKEN_REDIS_EXPIRY, //7 days
-    );
-  }
-
-  public getAccessToken(userId: string): Promise<string | null> {
-    return this.redisRepository.get('access_token', userId);
-  }
-
-  public getRefreshToken(userId: string): Promise<string | null> {
-    return this.redisRepository.get('refresh_token', userId);
-  }
-
-  public async removeTokens(userId: string): Promise<void> {
-    await this.redisRepository.delete('access_token', userId);
-    await this.redisRepository.delete('refresh_token', userId);
-  }
-  //#endregion
-
   //#region Add message
   public async addMessageToCache(
     message: MessageDataDto,

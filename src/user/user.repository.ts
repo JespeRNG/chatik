@@ -24,7 +24,7 @@ export class UserRepository {
     return this.prisma.user.create({ data: createUserDto });
   }
 
-  public update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
+  /* public update(id: string, updateUserDto: UpdateUserDto): Promise<UserEntity> {
     return this.prisma.user.update({
       where: {
         id,
@@ -33,7 +33,7 @@ export class UserRepository {
         refreshToken: updateUserDto.refreshToken,
       },
     });
-  }
+  } */
 
   public delete(id: string): Promise<UserEntity> {
     return this.prisma.user.delete({ where: { id } });

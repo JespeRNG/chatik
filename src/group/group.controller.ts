@@ -29,13 +29,14 @@ import { UpdateGroupDto } from './dto/update-group.dto';
 import { MessageService } from './message/message.service';
 import { MessageEntity } from './message/entities/message.entity';
 import { CreateMessageDto } from './message/dto/create-message.dto';
-import { AccessTokenGuard } from 'src/auth/guards/accessToken.guard';
+import { HeaderAuthGuard } from 'src/auth/guards/header-auth.guard';
 import { GroupParticipantService } from './participant/group-participant.service';
 import { GroupParticipantEntity } from './participant/entities/group-participant.entity';
 
 @ApiBearerAuth()
 @ApiTags('api/groups')
 @Controller('api/groups')
+@UseGuards(HeaderAuthGuard)
 export class GroupApiController {
   constructor(
     private readonly groupService: GroupService,
@@ -53,7 +54,6 @@ export class GroupApiController {
   @ApiCreatedResponse({ type: GroupEntity })
   @ApiResponse({ status: 409, description: 'Group already exists.' })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public async createGroup(
     @Body() createGroupDto: CreateGroupDto,
     @Request() req: req,
@@ -68,7 +68,6 @@ export class GroupApiController {
   @ApiOkResponse({ type: GroupEntity, isArray: true })
   @ApiResponse({ status: 404, description: 'Groups not found.' })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public async getGroups(): Promise<GroupEntity[]> {
     return this.groupService.findAll();
   }
@@ -86,7 +85,6 @@ export class GroupApiController {
     description: 'There are no related groups to this user.',
   })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public async getRelatedGroups(@Request() req: req): Promise<GroupEntity[]> {
     const userId = req.user['sub'];
 
@@ -104,7 +102,6 @@ export class GroupApiController {
     type: String,
   })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public async getGroup(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<GroupEntity> {
@@ -116,7 +113,6 @@ export class GroupApiController {
   @ApiOkResponse({ type: GroupEntity })
   @ApiResponse({ status: 404, description: 'Group not found.' })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public async deleteGroup(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<GroupEntity> {
@@ -133,7 +129,6 @@ export class GroupApiController {
   @ApiResponse({ status: 404, description: 'Group not found.' })
   @ApiResponse({ status: 400, description: 'Empty DTO received.' })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public async updateGroup(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateGroupDto: UpdateGroupDto,
@@ -168,7 +163,6 @@ export class GroupApiController {
   })
   @ApiCreatedResponse({ type: GroupEntity })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public addParticipantToGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -203,7 +197,6 @@ export class GroupApiController {
     description: `Group creator cannot be removed from the group.`,
   })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public removeParticipantFromGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -224,7 +217,6 @@ export class GroupApiController {
     description: 'A message was successfully created.',
   })
   @ApiBearerAuth()
-  @UseGuards(AccessTokenGuard)
   public createMessage(
     @Body() createMessageDto: CreateMessageDto,
   ): Promise<MessageEntity> {

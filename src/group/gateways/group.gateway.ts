@@ -19,13 +19,13 @@ import { Socket, Namespace, Server } from 'socket.io';
 import { RedisService } from 'src/redis/redis.service';
 import { MessageService } from '../message/message.service';
 import { UpdateGroupMvcDto } from './dto/update-group-mvc.dto';
-import { SocketAuthGuard } from 'src/auth/guards/socketAuth.guard';
+import { CookieAuthGuard } from 'src/auth/guards/cookie-auth.guard';
 import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 import { SocketValidationPipe } from './pipes/socket-validation.pipe';
 import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
 import { GroupParticipantService } from '../participant/group-participant.service';
 
-@UseGuards(SocketAuthGuard)
+@UseGuards(CookieAuthGuard)
 @UseFilters(GroupWebsocketFilter)
 @WebSocketGateway(3001, {
   namespace: '/group',
@@ -61,7 +61,7 @@ export class GroupGateway implements OnGatewayInit {
     @ConnectedSocket() socket: Socket,
   ): void {
     socket.join(groupId);
-    socket.emit('user', socket.user.sub);
+    socket.emit('user', socket.user['sub']);
   }
 
   @SubscribeMessage('getMessage')
@@ -79,12 +79,12 @@ export class GroupGateway implements OnGatewayInit {
     const msg = await this.messageService.addMessage({
       content,
       groupId,
-      senderId: socket.user.sub,
+      senderId: socket.user['sub'],
       createdAt: new Date(),
     });
 
     const senderUsername = await this.messageService.getSenderUsername(
-      socket.user.sub,
+      socket.user['sub'],
     );
 
     this.io.in(msg.groupId).emit('sendMessage', {
@@ -214,7 +214,7 @@ export class GroupGateway implements OnGatewayInit {
           );
         }
 
-        if (userId === socket.user.sub) {
+        if (userId === socket.user['sub']) {
           throw new ConflictException(`Group creator cannot be a participant.`);
         }
 

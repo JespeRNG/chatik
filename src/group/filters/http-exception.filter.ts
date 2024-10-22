@@ -18,6 +18,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const message = exception.message;
 
     if (exception instanceof UnauthorizedException || status === 401) {
+      const refreshToken = request.cookies['refreshToken'];
+
+      if (refreshToken) {
+        return response.redirect('/refresh');
+      }
+
       return response.redirect('/signin');
     }
 

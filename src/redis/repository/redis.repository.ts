@@ -25,25 +25,8 @@ export class RedisRepository {
     await this.redisClient.hdel(redisKey, key);
   }
 
-  public get(prefix: string, key: string): Promise<string | null> {
-    return this.redisClient.get(`${prefix}:${key}`);
-  }
-
-  public async delete(prefix: string, key: string): Promise<void> {
-    await this.redisClient.del(`${prefix}:${key}`);
-  }
-
   public async clearMessagesCache(key: string): Promise<void> {
     await this.redisClient.del(key);
-  }
-
-  public async setWithExpiry(
-    prefix: string,
-    key: string,
-    value: string,
-    expiry: number,
-  ): Promise<void> {
-    await this.redisClient.set(`${prefix}:${key}`, value, 'EX', expiry);
   }
 
   public rpush(key: string, ...values: string[]): Promise<number> {

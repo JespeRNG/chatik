@@ -32,6 +32,7 @@
     "@nestjs/schedule": "^4.1.0",
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "^7.3.0",
+    "@nestjs/throttler": "^6.2.1",
     "@nestjs/websockets": "^10.4.1",
     "@prisma/client": "^5.9.1",
     "argon2": "^0.40.3",
@@ -52,7 +53,8 @@
     "redis": "^4.7.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "socket.io": "^2.5.1"
+    "socket.io": "^2.5.1",
+    "ua-parser-js": "^1.0.39"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

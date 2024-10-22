@@ -1,34 +1,25 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  JWT_ACCESS_SECRET,
-  ACCESS_TOKEN_EXPIRY,
-  JWT_REFRESH_SECRET,
-  REFRESH_TOKEN_EXPIRY,
-  ROUNDS_OF_HASHING,
-} from 'src/constants/constants';
-import * as argon2 from 'argon2';
 import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 import { TokensDto } from './dto/tokens.dto';
+import { TokenService } from './token.service';
 import { UserService } from 'src/user/user.service';
-import { RedisService } from 'src/redis/redis.service';
+import { UserEntity } from 'src/user/entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { TokenWhitelistDto } from './dto/token-whitelist.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
-    private userService: UserService,
-    private redisService: RedisService,
+    private readonly userService: UserService,
+    private readonly tokenService: TokenService,
   ) {}
 
-  public async signUp(createUserDto: CreateUserDto): Promise<TokensDto> {
+  public async signUp(createUserDto: CreateUserDto): Promise<UserEntity> {
     const userExists = await this.userService.findByUsername(
       createUserDto.username,
     );
@@ -37,14 +28,14 @@ export class AuthService {
     }
 
     const newUser = await this.userService.createUser(createUserDto);
-
-    const tokens = await this.createTokens(newUser.id, newUser.username);
-    this.updateRefreshToken(newUser.id, tokens.refresh_token);
-
-    return tokens;
+    return newUser;
   }
 
-  public async signIn(username: string, password: string): Promise<TokensDto> {
+  public async signIn(
+    username: string,
+    password: string,
+    deviceInfo: string,
+  ): Promise<TokensDto> {
     const user = await this.userService.findByUsername(username);
 
     if (!user) {
@@ -56,81 +47,47 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    const tokens = await this.createTokens(user.id, user.username);
-    this.updateRefreshToken(user.id, tokens.refresh_token);
-
-    await this.redisService.saveTokens(
+    const tokenFromWhitelist = await this.tokenService.existsByDeviceInfo(
+      deviceInfo,
       user.id,
-      tokens.access_token,
-      tokens.refresh_token,
     );
-    return tokens;
-  }
 
-  public async logout(userId: string): Promise<void> {
-    await this.redisService.removeTokens(userId);
-  }
+    const tokens = this.tokenService.createTokens(user.id, user.username);
 
-  private async updateRefreshToken(
-    userId: string,
-    refreshToken: string,
-  ): Promise<void> {
-    const hashedRefreshToken = await argon2.hash(refreshToken);
-    this.userService.updateUser(userId, {
-      refreshToken: hashedRefreshToken,
-    });
-  }
+    if (!tokenFromWhitelist) {
+      await this.tokenService.createWhitelist({
+        userId: user.id,
+        refreshToken: tokens.refreshToken,
+        deviceInfo,
+      });
 
-  public async refreshTokens(
-    userId: string,
-    refreshToken: string,
-  ): Promise<TokensDto> {
-    const user = await this.userService.findUserById(userId);
-    if (!user || !user.refreshToken)
-      throw new ForbiddenException('Access Denied');
-
-    const refreshTokenMatches = await argon2.verify(
-      user.refreshToken,
-      refreshToken,
-    );
-    if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
-
-    const tokens = await this.createTokens(user.id, user.username);
-    this.updateRefreshToken(user.id, tokens.refresh_token);
-
-    return tokens;
-  }
-
-  private async createTokens(
-    userId: string,
-    username: string,
-  ): Promise<TokensDto> {
-    const [access_token, refresh_token] = await Promise.all([
-      this.jwtService.signAsync(
-        {
-          sub: userId,
-          username,
-        },
-        {
-          secret: JWT_ACCESS_SECRET,
-          expiresIn: ACCESS_TOKEN_EXPIRY, //30m
-        },
-      ),
-      this.jwtService.signAsync(
-        {
-          sub: userId,
-          username,
-        },
-        {
-          secret: JWT_REFRESH_SECRET,
-          expiresIn: REFRESH_TOKEN_EXPIRY, //7d
-        },
-      ),
-    ]);
+      return tokens;
+    }
 
     return {
-      access_token,
-      refresh_token,
+      accessToken: tokens.accessToken,
+      refreshToken: tokenFromWhitelist.refreshToken,
     };
+  }
+
+  public refreshToken(
+    refreshToken: string,
+    deviceInfo: string,
+  ): Promise<TokensDto> {
+    return this.tokenService.refreshToken(refreshToken, deviceInfo);
+  }
+
+  public async logout(
+    userId: string,
+    refreshToken: string,
+    deviceInfo: string,
+  ): Promise<TokenWhitelistDto> {
+    const removedRefreshToken = await this.tokenService.deleteRefreshToken(
+      userId,
+      refreshToken,
+      deviceInfo,
+    );
+
+    return removedRefreshToken;
   }
 }

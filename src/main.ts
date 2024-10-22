@@ -7,13 +7,19 @@ import { SocketIoAdapter } from './socket/socket-io.adapter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
 
 async function bootstrap() {
   dotenv.config();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+  });
 
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector)),
+    new AuthInterceptor(),
+  );
 
   const viewsPath = join(__dirname, '../public/views');
   app.setViewEngine('hbs');
