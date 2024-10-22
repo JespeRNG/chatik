@@ -41,20 +41,6 @@ export class UserService {
     return user;
   }
 
-  /* public async updateUser(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<UserEntity> {
-    const user = await this.userRepository.findByUsername(
-      updateUserDto.username,
-    );
-    if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND_EXCEPTION);
-    }
-
-    return this.userRepository.update(id, updateUserDto);
-  } */
-
   public async removeUser(userId: string): Promise<UserEntity> {
     const { id } = await this.findUserById(userId);
     return this.userRepository.delete(id);

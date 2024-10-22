@@ -43,8 +43,11 @@ export class MessageService {
       const allMessages = await this.redisService.getAllMessagesFromCache(
         message.groupId,
       );
-      await this.saveMessagesToDb(message.groupId, allMessages);
-      await this.redisService.clearMessagesCache(message.groupId);
+
+      Promise.all([
+        await this.saveMessagesToDb(message.groupId, allMessages),
+        await this.redisService.clearMessagesCache(message.groupId),
+      ]);
     }
 
     return cachedMessage;

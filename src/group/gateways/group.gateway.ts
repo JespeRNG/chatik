@@ -187,17 +187,20 @@ export class GroupGateway implements OnGatewayInit {
       socket,
       updateGroupDto.usersToAdd,
     );
-
-    await this.participantService.createParticipants(
-      updateGroupDto.groupId,
-      participantIds,
-    );
+    Promise.all([
+      await this.participantService.createParticipants(
+        updateGroupDto.groupId,
+        participantIds,
+      ),
+      await this.notifyOnlineParticipants(
+        updateGroupDto.groupId,
+        participantIds,
+      ),
+    ]);
 
     this.io
       .in(updateGroupDto.groupId)
       .emit('getGroupUpdates', { participants: updateGroupDto.usersToAdd });
-
-    await this.notifyOnlineParticipants(updateGroupDto.groupId, participantIds);
   }
 
   private async getParticipantIds(
