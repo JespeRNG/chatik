@@ -9,9 +9,10 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { AuthViewController } from './auth.view.controller';
 import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [UserModule, RedisModule, PrismaModule],
+  imports: [ScheduleModule.forRoot(), UserModule, RedisModule, PrismaModule],
   controllers: [AuthApiController, AuthViewController],
   providers: [
     AuthService,

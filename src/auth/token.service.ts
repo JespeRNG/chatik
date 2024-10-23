@@ -10,6 +10,7 @@ import { TokenRepository } from './token.repository';
 import { TokenWhitelistDto } from './dto/token-whitelist.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { TokenWhiteListEntity } from './entity/token-whiteList.entity';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class TokenService {
@@ -35,7 +36,7 @@ export class TokenService {
     refreshToken: string,
     deviceInfo: string,
   ): Promise<TokensDto> {
-    const tokenFromWhitelist = await this.tokenRepository.getRefreshToken(
+    const tokenFromWhitelist = await this.tokenRepository.findRefreshToken(
       deviceInfo,
       refreshToken,
     );
@@ -70,7 +71,7 @@ export class TokenService {
     deviceInfo: string,
     userId: string,
   ): Promise<TokenWhitelistDto> {
-    const token = await this.tokenRepository.getRefreshTokenByUserId(
+    const token = await this.tokenRepository.findRefreshTokenByUserId(
       deviceInfo,
       userId,
     );
@@ -105,6 +106,18 @@ export class TokenService {
       secret: JWT_REFRESH_SECRET,
       expiresIn: REFRESH_TOKEN_EXPIRY,
     });
+  }
+
+  //clears expired refresh tokens every day at 12:00 am
+  @Cron('0 0 * * *')
+  private async clearExpiredTokens(): Promise<void> {
+    const now = new Date();
+    const expiredTokens = await this.tokenRepository.findExpiredTokens(now);
+
+    if (expiredTokens) {
+      const deleted =
+        await this.tokenRepository.deleteExpiredTokens(expiredTokens);
+    }
   }
   //#endregion
 }

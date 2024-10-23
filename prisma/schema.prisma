@@ -25,6 +25,7 @@ model TokenWhiteList {
   userId       String
   refreshToken String   @unique
   deviceInfo   String
+  expiresAt    DateTime
   createdAt    DateTime @default(now())
 
   @@map("token_whitelist")

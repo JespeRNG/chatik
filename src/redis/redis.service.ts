@@ -1,9 +1,5 @@
-import {
-  ACCESS_TOKEN_REDIS_EXPIRY,
-  REFRESH_TOKEN_REDIS_EXPIRY,
-  USER_SOCKET_REDISKEY,
-} from 'src/constants/constants';
 import { Injectable } from '@nestjs/common';
+import { USER_SOCKET_REDISKEY } from 'src/constants/constants';
 import { RedisRepository } from './repository/redis.repository';
 import { MessageDataDto } from 'src/group/message/dto/message-data.dto';
 

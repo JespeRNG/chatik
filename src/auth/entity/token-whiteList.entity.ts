@@ -16,4 +16,7 @@ export class TokenWhiteListEntity implements TokenWhiteList {
 
   @ApiProperty()
   createdAt: Date;
+
+  @ApiProperty()
+  expiresAt: Date;
 }
