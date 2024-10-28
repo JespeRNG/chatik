@@ -4,22 +4,23 @@ import {
   Get,
   Post,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
+  ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import * as UAParser from 'ua-parser-js';
-import { Request as req } from 'express';
 import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { TokensDto } from './dto/tokens.dto';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Request as req, Response } from 'express';
 import { SkipAuth } from './guards/skip-auth.guard';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -63,19 +64,28 @@ export class AuthApiController {
     description: 'ThrottlerException: Too Many Requests',
   })
   @SkipAuth()
-  public signin(
+  public async signin(
     @Body() { username, password }: LoginDto,
+    @Res() res: Response,
     @Request() request: req,
-  ): Promise<TokensDto> {
+  ): Promise<void> {
     const deviceInfo = this.getDeviceInfo(request);
 
-    return this.authService.signIn(username, password, deviceInfo);
+    const tokens = await this.authService.signIn(
+      username,
+      password,
+      deviceInfo,
+    );
+
+    this.setCookies(res, tokens);
+
+    res.status(200).json(tokens);
   }
 
   @Post('logout')
   @ApiOperation({ summary: 'Log user out' })
   @ApiOkResponse({ description: 'A user was logged out successfully' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   @UseGuards(HeaderAuthGuard)
   public logout(@Request() request: req): { message: string } {
     const refreshToken = request.cookies['refreshToken'];
@@ -102,6 +112,23 @@ export class AuthApiController {
     return this.authService.refreshToken(refreshToken, deviceInfo);
   }
 
+  //#region private methods
+  private setCookies(@Res() res: Response, tokens: TokensDto) {
+    res.cookie('accessToken', tokens.accessToken, {
+      httpOnly: true,
+      maxAge: 1800000, // 30 minutes in milliseconds
+      secure: true,
+      sameSite: 'none',
+    });
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      maxAge: 604800000, // 7 days in milliseconds
+      secure: true,
+      sameSite: 'none',
+    });
+  }
+
   private getDeviceInfo(@Request() request: req): string {
     const parser = new UAParser();
     const userAgent = request.headers['user-agent'];
@@ -114,4 +141,5 @@ export class AuthApiController {
 
     return `Browser: ${browserName}, OS: ${osName} ${osVersion}`;
   }
+  //#endregion
 }

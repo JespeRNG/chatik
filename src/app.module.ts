@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { CaslModule } from './casl/casl.module';
 import { GroupModule } from './group/group.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -10,8 +11,8 @@ import { TokenService } from './auth/token.service';
 import { RedisModule } from 'src/redis/redis.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { CookieAuthGuard } from './auth/guards/cookie-auth.guard';
 import { TokenRepository } from './auth/token.repository';
+import { CookieAuthGuard } from './auth/guards/cookie-auth.guard';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { TokenRepository } from './auth/token.repository';
       rootPath: path.join(__dirname, '../', 'public'),
       serveRoot: '/',
     }),
+    CaslModule,
     PrismaModule,
     AuthModule,
     UserModule,

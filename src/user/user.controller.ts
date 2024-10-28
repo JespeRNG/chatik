@@ -1,13 +1,7 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Delete,
-  UseGuards,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Param, Delete, ParseUUIDPipe } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiCookieAuth,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
@@ -16,18 +10,16 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { UserEntity } from './entities/user.entity';
-import { HeaderAuthGuard } from 'src/auth/guards/header-auth.guard';
 
 @ApiBearerAuth()
 @ApiTags('api/users')
 @Controller('api/users')
-@UseGuards(HeaderAuthGuard)
 export class UserApiController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all users' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   @ApiOkResponse({
     type: UserEntity,
     isArray: true,
@@ -42,7 +34,7 @@ export class UserApiController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   @ApiParam({
     name: 'id',
     required: true,
@@ -62,7 +54,7 @@ export class UserApiController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Remove user by ID' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
   @ApiParam({
     name: 'id',
     required: true,

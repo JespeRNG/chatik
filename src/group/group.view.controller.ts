@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { GroupService } from './group.service';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
+import { HttpExceptionFilter } from '../filters/http-exception.filter';
 import { AuthInterceptor } from 'src/auth/interceptors/auth.interceptor';
 
 @ApiExcludeController()

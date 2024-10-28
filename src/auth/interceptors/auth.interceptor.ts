@@ -13,6 +13,7 @@ import { Observable, throwError } from 'rxjs';
 export class AuthInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
+    const type = context.getType();
     const response: Response = context.switchToHttp().getResponse();
 
     return next.handle().pipe(

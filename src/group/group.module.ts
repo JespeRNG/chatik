@@ -15,6 +15,7 @@ import { redisClientFactory } from 'src/redis/redis.client.factory';
 import { RedisRepository } from 'src/redis/repository/redis.repository';
 import { GroupParticipantService } from './participant/group-participant.service';
 import { GroupParticipantRepository } from './participant/group-participant.repository';
+import { CaslModule } from 'src/casl/casl.module';
 
 @Module({
   controllers: [GroupApiController, GroupViewController],
@@ -31,6 +32,6 @@ import { GroupParticipantRepository } from './participant/group-participant.repo
     GroupParticipantService,
     GroupParticipantRepository,
   ],
-  imports: [PrismaModule, UserModule, GroupModule, RedisModule],
+  imports: [PrismaModule, UserModule, GroupModule, RedisModule, CaslModule],
 })
 export class GroupModule {}

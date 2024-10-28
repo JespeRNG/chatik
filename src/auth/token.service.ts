@@ -4,24 +4,39 @@ import {
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
 } from 'src/constants/constants';
+import { Cron } from '@nestjs/schedule';
 import { JwtService } from '@nestjs/jwt';
 import { TokensDto } from './dto/tokens.dto';
+import { UserService } from 'src/user/user.service';
 import { TokenRepository } from './token.repository';
 import { TokenWhitelistDto } from './dto/token-whitelist.dto';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { TokenWhiteListEntity } from './entity/token-whiteList.entity';
-import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class TokenService {
   constructor(
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
     private readonly tokenRepository: TokenRepository,
   ) {}
 
-  public createTokens(userId: string, username: string): TokensDto {
-    const accessToken = this.createAccessToken({ sub: userId, username });
-    const refreshToken = this.createRefreshToken({ sub: userId, username });
+  public async createTokens(
+    userId: string,
+    username: string,
+  ): Promise<TokensDto> {
+    const { role: role } = await this.userService.findUserById(userId);
+
+    const accessToken = await this.createAccessToken({
+      sub: userId,
+      username,
+      role,
+    });
+    const refreshToken = this.createRefreshToken({
+      sub: userId,
+      username,
+      role,
+    });
 
     return { accessToken, refreshToken };
   }
@@ -50,9 +65,10 @@ export class TokenService {
         secret: JWT_REFRESH_SECRET,
       });
 
-      const accessToken = this.createAccessToken({
+      const accessToken = await this.createAccessToken({
         sub: userInfo.sub,
         username: userInfo.username,
+        role: userInfo.role,
       });
 
       return { accessToken, refreshToken };
@@ -94,8 +110,8 @@ export class TokenService {
   }
 
   //#region  private methods
-  private createAccessToken(payload: object): string {
-    return this.jwtService.sign(payload, {
+  private createAccessToken(payload: object): Promise<string> {
+    return this.jwtService.signAsync(payload, {
       secret: JWT_ACCESS_SECRET,
       expiresIn: ACCESS_TOKEN_EXPIRY,
     });
@@ -115,8 +131,7 @@ export class TokenService {
     const expiredTokens = await this.tokenRepository.findExpiredTokens(now);
 
     if (expiredTokens) {
-      const deleted =
-        await this.tokenRepository.deleteExpiredTokens(expiredTokens);
+      await this.tokenRepository.deleteExpiredTokens(expiredTokens);
     }
   }
   //#endregion

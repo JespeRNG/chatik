@@ -1,3 +1,4 @@
+import { Roles } from '@prisma/client';
 import { Exclude } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -17,4 +18,7 @@ export class UserEntity {
 
   @Exclude()
   password: string;
+
+  @ApiProperty()
+  role: Roles;
 }

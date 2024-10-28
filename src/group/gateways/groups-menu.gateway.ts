@@ -20,7 +20,7 @@ import { CreateGroupDto } from '../dto/create-group.dto';
 import { MessageService } from '../message/message.service';
 import { CookieAuthGuard } from 'src/auth/guards/cookie-auth.guard';
 import { SocketValidationPipe } from './pipes/socket-validation.pipe';
-import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
+import { GroupWebsocketFilter } from '../../filters/group-websocket.filter';
 import { GroupParticipantService } from '../participant/group-participant.service';
 
 @UseGuards(CookieAuthGuard)

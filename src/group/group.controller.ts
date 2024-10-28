@@ -7,6 +7,7 @@ import {
   ApiBody,
   ApiResponse,
   ApiParam,
+  ApiCookieAuth,
 } from '@nestjs/swagger';
 import {
   Controller,
@@ -23,20 +24,21 @@ import {
 } from '@nestjs/common';
 import { Request as req } from 'express';
 import { GroupService } from './group.service';
+import { Action } from 'src/casl/actions.enum';
 import { GroupEntity } from './entities/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { CaslAbilityGuard } from 'src/casl/ability.guard';
 import { MessageService } from './message/message.service';
+import { CheckAbility } from 'src/casl/check-ability.decorator';
 import { MessageEntity } from './message/entities/message.entity';
 import { CreateMessageDto } from './message/dto/create-message.dto';
-import { HeaderAuthGuard } from 'src/auth/guards/header-auth.guard';
 import { GroupParticipantService } from './participant/group-participant.service';
 import { GroupParticipantEntity } from './participant/entities/group-participant.entity';
 
 @ApiBearerAuth()
 @ApiTags('api/groups')
 @Controller('api/groups')
-@UseGuards(HeaderAuthGuard)
 export class GroupApiController {
   constructor(
     private readonly groupService: GroupService,
@@ -53,7 +55,9 @@ export class GroupApiController {
   })
   @ApiCreatedResponse({ type: GroupEntity })
   @ApiResponse({ status: 409, description: 'Group already exists.' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Create, subject: GroupEntity })
   public async createGroup(
     @Body() createGroupDto: CreateGroupDto,
     @Request() req: req,
@@ -67,7 +71,9 @@ export class GroupApiController {
   @ApiOperation({ summary: 'Get all groups' })
   @ApiOkResponse({ type: GroupEntity, isArray: true })
   @ApiResponse({ status: 404, description: 'Groups not found.' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Read, subject: GroupEntity })
   public async getGroups(): Promise<GroupEntity[]> {
     return this.groupService.findAll();
   }
@@ -84,7 +90,9 @@ export class GroupApiController {
     status: 404,
     description: 'There are no related groups to this user.',
   })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Read, subject: GroupEntity })
   public async getRelatedGroups(@Request() req: req): Promise<GroupEntity[]> {
     const userId = req.user['sub'];
 
@@ -101,7 +109,9 @@ export class GroupApiController {
     description: 'ID of the group',
     type: String,
   })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Invite, subject: GroupEntity })
   public async getGroup(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<GroupEntity> {
@@ -112,7 +122,9 @@ export class GroupApiController {
   @ApiOperation({ summary: 'Remove group by ID' })
   @ApiOkResponse({ type: GroupEntity })
   @ApiResponse({ status: 404, description: 'Group not found.' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Delete, subject: GroupEntity })
   public async deleteGroup(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<GroupEntity> {
@@ -128,7 +140,9 @@ export class GroupApiController {
   @ApiOkResponse({ type: GroupEntity })
   @ApiResponse({ status: 404, description: 'Group not found.' })
   @ApiResponse({ status: 400, description: 'Empty DTO received.' })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Update, subject: GroupEntity })
   public async updateGroup(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateGroupDto: UpdateGroupDto,
@@ -162,7 +176,9 @@ export class GroupApiController {
     description: 'Participant is already in this group.',
   })
   @ApiCreatedResponse({ type: GroupEntity })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Update, subject: GroupEntity })
   public addParticipantToGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -196,7 +212,9 @@ export class GroupApiController {
     status: 403,
     description: `Group creator cannot be removed from the group.`,
   })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.Update, subject: GroupEntity })
   public removeParticipantFromGroup(
     @Param('groupId', ParseUUIDPipe) groupId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -216,7 +234,9 @@ export class GroupApiController {
     type: MessageEntity,
     description: 'A message was successfully created.',
   })
-  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(CaslAbilityGuard)
+  @CheckAbility({ action: Action.SendMessage, subject: MessageEntity })
   public createMessage(
     @Body() createMessageDto: CreateMessageDto,
   ): Promise<MessageEntity> {

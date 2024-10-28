@@ -52,7 +52,7 @@ export class AuthService {
       user.id,
     );
 
-    const tokens = this.tokenService.createTokens(user.id, user.username);
+    const tokens = await this.tokenService.createTokens(user.id, user.username);
 
     if (!tokenFromWhitelist) {
       await this.tokenService.createWhitelist({

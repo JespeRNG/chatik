@@ -6,8 +6,9 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { SocketIoAdapter } from './socket/socket-io.adapter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
+import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
+import { ForbiddenExceptionFilter } from './filters/forbidden-exception.filter';
 
 async function bootstrap() {
   dotenv.config();
@@ -20,6 +21,8 @@ async function bootstrap() {
     new ClassSerializerInterceptor(app.get(Reflector)),
     new AuthInterceptor(),
   );
+
+  app.useGlobalFilters(new ForbiddenExceptionFilter());
 
   const viewsPath = join(__dirname, '../public/views');
   app.setViewEngine('hbs');
@@ -38,7 +41,8 @@ async function bootstrap() {
     .setTitle('Chatik')
     .setDescription('The group-based chat application.')
     .setVersion('1.0')
-    .addBearerAuth()
+    //.addBearerAuth()
+    .addCookieAuth('accessToken')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

@@ -22,7 +22,7 @@ import { UpdateGroupMvcDto } from './dto/update-group-mvc.dto';
 import { CookieAuthGuard } from 'src/auth/guards/cookie-auth.guard';
 import { GROUP_PICTURE_DEFAULT_PATH } from 'src/constants/constants';
 import { SocketValidationPipe } from './pipes/socket-validation.pipe';
-import { GroupWebsocketFilter } from '../filters/group-websocket.filter';
+import { GroupWebsocketFilter } from '../../filters/group-websocket.filter';
 import { GroupParticipantService } from '../participant/group-participant.service';
 
 @UseGuards(CookieAuthGuard)
