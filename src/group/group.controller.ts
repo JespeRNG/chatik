@@ -22,9 +22,11 @@ import {
   BadRequestException,
   ParseUUIDPipe,
 } from '@nestjs/common';
+import { Roles } from '@prisma/client';
 import { Request as req } from 'express';
 import { GroupService } from './group.service';
 import { Action } from 'src/casl/actions.enum';
+import { UserService } from 'src/user/user.service';
 import { GroupEntity } from './entities/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
@@ -41,6 +43,7 @@ import { GroupParticipantEntity } from './participant/entities/group-participant
 @Controller('api/groups')
 export class GroupApiController {
   constructor(
+    private readonly userService: UserService,
     private readonly groupService: GroupService,
     private readonly messageService: MessageService,
     private readonly groupParticipantService: GroupParticipantService,
@@ -62,9 +65,15 @@ export class GroupApiController {
     @Body() createGroupDto: CreateGroupDto,
     @Request() req: req,
   ): Promise<GroupEntity> {
-    const creatorId = req.user['sub'];
+    const userId = req.user['sub'];
 
-    return this.groupService.create(createGroupDto, creatorId);
+    const createdGroup = await this.groupService.create(createGroupDto, userId);
+
+    if (createdGroup) {
+      this.userService.updateRole(userId, Roles.groupCreator);
+    }
+
+    return createdGroup;
   }
 
   @Get()
@@ -127,8 +136,12 @@ export class GroupApiController {
   @CheckAbility({ action: Action.Delete, subject: GroupEntity })
   public async deleteGroup(
     @Param('id', ParseUUIDPipe) id: string,
+    @Request() req: req,
   ): Promise<GroupEntity> {
-    return this.groupService.remove(id);
+    const userId = req.user['sub'];
+    const removedGroup = await this.groupService.remove(id, userId);
+
+    return removedGroup;
   }
 
   @Patch(':id')

@@ -3,6 +3,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
+import { Roles } from '@prisma/client';
 import { GroupInfoDto } from './dto/group-info.dto';
 import { UserService } from 'src/user/user.service';
 import { GroupRepository } from './group.repository';
@@ -91,10 +92,25 @@ export class GroupService {
     return groupInfo;
   }
 
-  public async remove(id: string): Promise<GroupEntity> {
+  public async remove(id: string, userId: string): Promise<GroupEntity> {
     const group = await this.findOne(id);
 
-    return this.groupRepository.delete(group.id);
+    if (!group) {
+      throw new NotFoundException('There is no such group.');
+    }
+
+    const removedGroup = await this.groupRepository.delete(group.id);
+
+    const relatedGroups = await this.findRelated(userId);
+    const hasCreatedGroups = relatedGroups.some(
+      (group) => group.creatorId === userId,
+    );
+
+    if (!hasCreatedGroups) {
+      this.userService.updateRole(userId, Roles.user);
+    }
+
+    return removedGroup;
   }
 
   public async updateGroup(

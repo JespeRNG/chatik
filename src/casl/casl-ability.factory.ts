@@ -8,6 +8,7 @@ import {
 import { Roles } from '@prisma/client';
 import { Action } from './actions.enum';
 import { Injectable } from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { GroupEntity } from 'src/group/entities/group.entity';
 import { MessageEntity } from 'src/group/message/entities/message.entity';
@@ -20,28 +21,33 @@ export const nullConditionsMatcher = () => (): boolean => true;
 
 @Injectable()
 export class CaslAbilityFactory {
-  createForUser(user: UserEntity) {
+  constructor(private readonly userService: UserService) {}
+
+  async createForUser(user: UserEntity) {
     const { can, build } = new AbilityBuilder<AppAbility>(
       PureAbility as AbilityClass<AppAbility>,
     );
 
-    if (user.role === Roles.admin) {
+    const userRole = await this.userService.getRole(user['sub']);
+
+    if (userRole === Roles.admin) {
       can(Action.Manage, 'all');
     }
 
-    if (user.role === Roles.user) {
+    if (userRole === Roles.user) {
       can(Action.Read, GroupEntity);
       can(Action.Create, GroupEntity);
       can(Action.SendMessage, MessageEntity);
     }
 
-    if (user.role === Roles.groupCreator) {
+    if (userRole === Roles.groupCreator) {
+      can(Action.Read, GroupEntity);
       can(Action.Create, GroupEntity);
       can(Action.Update, GroupEntity);
       can(Action.SendMessage, MessageEntity);
       can(Action.Update, GroupEntity, { creatorId: user.id });
-      can(Action.Delete, GroupEntity, { 'group.creatorId': user.id });
-      can(Action.Invite, GroupEntity, { 'group.creatorId': user.id });
+      can(Action.Delete, GroupEntity, { creatorId: user.id });
+      can(Action.Invite, GroupEntity, { creatorId: user.id });
     }
 
     return build({

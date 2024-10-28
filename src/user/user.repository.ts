@@ -1,3 +1,4 @@
+import { Roles } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,5 +26,25 @@ export class UserRepository {
 
   public delete(id: string): Promise<UserEntity> {
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  public async getRole(id: string): Promise<Roles> {
+    return (
+      await this.prisma.user.findFirst({
+        where: { id },
+        select: { role: true },
+      })
+    ).role;
+  }
+
+  public updateRole(userId: string, role: Roles): Promise<UserEntity> {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        role,
+      },
+    });
   }
 }

@@ -25,17 +25,13 @@ export class TokenService {
     userId: string,
     username: string,
   ): Promise<TokensDto> {
-    const { role: role } = await this.userService.findUserById(userId);
-
     const accessToken = await this.createAccessToken({
       sub: userId,
       username,
-      role,
     });
     const refreshToken = this.createRefreshToken({
       sub: userId,
       username,
-      role,
     });
 
     return { accessToken, refreshToken };

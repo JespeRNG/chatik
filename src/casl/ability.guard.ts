@@ -11,12 +11,12 @@ export class CaslAbilityGuard implements CanActivate {
     private caslAbilityFactory: CaslAbilityFactory,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRules =
       this.reflector.get<RequiredRule[]>(CHECK_ABILITY, context.getHandler()) ||
       [];
     const { user } = context.switchToHttp().getRequest();
-    const ability = this.caslAbilityFactory.createForUser(user);
+    const ability = await this.caslAbilityFactory.createForUser(user);
 
     requiredRules.forEach((rule) => {
       ForbiddenError.from(ability).throwUnlessCan(rule.action, rule.subject);

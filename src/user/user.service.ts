@@ -1,7 +1,7 @@
+import { Roles } from '@prisma/client';
 import { UserRepository } from './user.repository';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { USER_NOT_FOUND_EXCEPTION } from 'src/constants/constants';
 
@@ -44,5 +44,19 @@ export class UserService {
   public async removeUser(userId: string): Promise<UserEntity> {
     const { id } = await this.findUserById(userId);
     return this.userRepository.delete(id);
+  }
+
+  public getRole(userId: string): Promise<Roles> {
+    return this.userRepository.getRole(userId);
+  }
+
+  public async updateRole(userId: string, role: Roles): Promise<UserEntity> {
+    const currentUserRole = (await this.userRepository.findById(userId)).role;
+
+    if (currentUserRole === role) {
+      return;
+    }
+
+    return this.userRepository.updateRole(userId, role);
   }
 }
