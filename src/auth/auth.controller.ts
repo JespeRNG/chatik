@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpStatus,
   Post,
   Request,
   Res,
@@ -25,6 +26,7 @@ import { SkipAuth } from './guards/skip-auth.guard';
 import { UserEntity } from 'src/user/entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
 import { HeaderAuthGuard } from './guards/header-auth.guard';
+import { CookieAuthGuard } from './guards/cookie-auth.guard';
 
 @ApiTags('api/auth')
 @Controller('api/auth')
@@ -52,7 +54,9 @@ export class AuthApiController {
 
   @Post('signin')
   @UseGuards(ThrottlerGuard)
-  @ApiOperation({ summary: 'Sign in and return tokens' })
+  @ApiOperation({
+    summary: 'Signs in, returns tokens and adds them to cookies',
+  })
   @ApiOkResponse({ type: TokensDto })
   @ApiResponse({
     status: 404,
@@ -83,17 +87,18 @@ export class AuthApiController {
   }
 
   @Post('logout')
-  @ApiOperation({ summary: 'Log user out' })
+  @ApiOperation({ summary: 'Logs user out' })
   @ApiOkResponse({ description: 'A user was logged out successfully' })
   @ApiCookieAuth()
-  @UseGuards(HeaderAuthGuard)
-  public logout(@Request() request: req): { message: string } {
+  @UseGuards(CookieAuthGuard)
+  public logout(@Request() request: req, @Res() res: Response): void {
     const refreshToken = request.cookies['refreshToken'];
     const deviceInfo = this.getDeviceInfo(request);
 
     this.authService.logout(request.user['sub'], refreshToken, deviceInfo);
+    this.removeCookies(res);
 
-    return { message: 'Logged out successfully.' };
+    res.sendStatus(200);
   }
 
   //To test it you should put refresh token as a bearer token in the Authorization tab in postman
@@ -113,7 +118,7 @@ export class AuthApiController {
   }
 
   //#region private methods
-  private setCookies(@Res() res: Response, tokens: TokensDto) {
+  private setCookies(@Res() res: Response, tokens: TokensDto): void {
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       maxAge: 1800000, // 30 minutes in milliseconds
@@ -124,6 +129,21 @@ export class AuthApiController {
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 604800000, // 7 days in milliseconds
+      secure: true,
+      sameSite: 'none',
+    });
+  }
+
+  private removeCookies(@Res() res: Response): void {
+    res.cookie('accessToken', '', {
+      httpOnly: true,
+      expires: new Date(0),
+      secure: true,
+      sameSite: 'none',
+    });
+    res.cookie('refreshToken', '', {
+      httpOnly: true,
+      expires: new Date(0),
       secure: true,
       sameSite: 'none',
     });
