@@ -1,14 +1,16 @@
 FROM node:18.19.1-bullseye-slim
 
+ENV NODE_ENV development
+
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install -g @nestjs/cli
+RUN apt-get update && apt-get install -y procps
 
-RUN npm ci --only=production
+RUN npm install
 
-COPY . .
+COPY . /usr/src/app
 
 RUN npx prisma generate
 

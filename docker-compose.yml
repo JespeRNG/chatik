@@ -10,6 +10,8 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - my_network
   redis:
     image: redis:6.0.7
     container_name: redis
@@ -18,6 +20,8 @@ services:
       - redis_volume_data:/data
     ports:
       - 6379:6379
+    networks:
+      - my_network
   redis_insight:
     image: redislabs/redisinsight:1.14.0
     container_name: redis_insight
@@ -26,10 +30,14 @@ services:
       - 8001:8001
     volumes:
       - redis_insight_volume_data:/db
+    networks:
+      - my_network
   postgres:
     image: postgres:16.4
     container_name: postgres
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -38,8 +46,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - 5432:5432
+    networks:
+      - my_network
 
 volumes:
   redis_volume_data:
   redis_insight_volume_data:
   postgres_data:
+
+networks:
+  my_network:
+    driver: bridge
