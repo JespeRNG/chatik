@@ -1,0 +1,32 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_KEY }}
+
+      - name: Deploy to VM
+        env:
+          GCP_SSH_USER: ${{ secrets.GCP_SSH_USER }}
+          GCP_SSH_HOST: ${{ secrets.GCP_SSH_HOST }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.GCP_SSH_USER }}@${{ secrets.GCP_SSH_HOST }} << 'EOF'
+            cd ~/onix/chatik
+            git pull origin master
+            docker-compose down
+            docker system prune -f
+            docker-compose up -d --build
+          EOF
