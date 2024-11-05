@@ -1,5 +1,5 @@
 $(document).ready(function () {
-  const socket = io('ws://localhost:3001/group', {
+  const socket = io('ws://34.116.165.2:3001/group', {
     withCredentials: true,
     transports: ['websocket', 'polling'],
   });
