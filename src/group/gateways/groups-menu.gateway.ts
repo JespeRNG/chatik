@@ -27,7 +27,7 @@ import { GroupParticipantService } from '../participant/group-participant.servic
 @UseFilters(GroupWebsocketFilter)
 @WebSocketGateway(3001, {
   namespace: '/menu',
-  handlePreflightRequest: (req, res) => {
+  handlePreflightRequest: (res) => {
     res.writeHead(200, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
@@ -49,9 +49,11 @@ export class GroupsMenuGateway implements OnGatewayDisconnect {
   ) {}
 
   handleDisconnect(socket: Socket) {
-    const userId = socket.user['sub'];
+    try {
+      const userId = socket.user['sub'];
 
-    this.redisService.removeUserSocketId(userId);
+      this.redisService.removeUserSocketId(userId);
+    } catch (err) {}
   }
 
   @SubscribeMessage('getRelatedGroups')
