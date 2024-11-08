@@ -6,14 +6,19 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN apt-get update && apt-get install -y procps
-
-RUN npm install
-
 COPY . /usr/src/app
+
+RUN apt-get update && apt-get install -y --no-install-recommends dumb-init
+
+RUN npm install -g @nestjs/cli
+
+RUN npm ci --only=production
 
 RUN npx prisma generate
 
+RUN chown -R node:node /usr/src/app
+USER node
+
 EXPOSE 3000
 
-CMD ["npm", "run", "start:dev"]
+CMD ["dumb-init", "npm", "run", "start:dev"]
