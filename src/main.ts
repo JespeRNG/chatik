@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { SocketIoAdapter } from './socket/socket-io.adapter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { setupGracefulShutdown } from 'nestjs-graceful-shutdown';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AuthInterceptor } from './auth/interceptors/auth.interceptor';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
@@ -15,6 +16,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
   });
+
+  setupGracefulShutdown({ app });
 
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalInterceptors(
@@ -34,6 +37,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: `http://${process.env.APP_HOST}:${process.env.APP_PORT}`,
+    methods: ['GET', 'POST', 'DELETE', 'PATCH'],
     credentials: true,
   });
 
@@ -41,13 +45,11 @@ async function bootstrap() {
     .setTitle('Chatik')
     .setDescription('The group-based chat application.')
     .setVersion('1.0')
-    //.addBearerAuth()
     .addCookieAuth('accessToken')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  app.enableShutdownHooks();
   await app.listen(+process.env.APP_PORT);
 }
 bootstrap();

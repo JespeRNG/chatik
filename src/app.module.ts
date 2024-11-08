@@ -9,10 +9,15 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TokenService } from './auth/token.service';
 import { RedisModule } from 'src/redis/redis.module';
-import { PrismaModule } from './prisma/prisma.module';
+import { PrismaModule } from './common/prisma.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TokenRepository } from './auth/token.repository';
 import { CookieAuthGuard } from './auth/guards/cookie-auth.guard';
+import { GracefulShutdownModule } from 'nestjs-graceful-shutdown';
+import { AppService } from './app.service';
+import { GroupParticipantRepository } from './group/participant/group-participant.repository';
+import { UserRepository } from './user/user.repository';
+import { GroupRepository } from './group/group.repository';
 
 @Module({
   imports: [
@@ -29,6 +34,9 @@ import { CookieAuthGuard } from './auth/guards/cookie-auth.guard';
       rootPath: path.join(__dirname, '../', 'public'),
       serveRoot: '/',
     }),
+    GracefulShutdownModule.forRoot({
+      gracefulShutdownTimeout: 5000, // 5 seconds
+    }),
     CaslModule,
     PrismaModule,
     AuthModule,
@@ -38,9 +46,13 @@ import { CookieAuthGuard } from './auth/guards/cookie-auth.guard';
   ],
   controllers: [],
   providers: [
+    AppService,
     JwtService,
     TokenService,
     TokenRepository,
+    UserRepository,
+    GroupRepository,
+    GroupParticipantRepository,
     {
       provide: APP_GUARD,
       useClass: CookieAuthGuard,

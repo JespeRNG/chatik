@@ -2,11 +2,14 @@ import { Roles } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { UserEntity } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma.service';
+import { BaseRepository } from 'src/common/base.repository';
 
 @Injectable()
-export class UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class UserRepository extends BaseRepository {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma);
+  }
 
   public findAll(): Promise<UserEntity[]> {
     return this.prisma.user.findMany({ include: { participant: true } });

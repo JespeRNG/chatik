@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma.service';
 import { GroupParticipantEntity } from './entities/group-participant.entity';
+import { BaseRepository } from 'src/common/base.repository';
 
 @Injectable()
-export class GroupParticipantRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class GroupParticipantRepository extends BaseRepository {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma);
+  }
 
   public create(
     groupId: string,

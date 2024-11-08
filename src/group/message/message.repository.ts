@@ -1,12 +1,15 @@
 import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma.service';
 import { MessageEntity } from './entities/message.entity';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { BaseRepository } from 'src/common/base.repository';
 
 @Injectable()
-export class MessageRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class MessageRepository extends BaseRepository {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma);
+  }
 
   public create(createMessageDto: CreateMessageDto): Promise<MessageEntity> {
     return this.prisma.message.create({

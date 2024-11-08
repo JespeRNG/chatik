@@ -1,13 +1,16 @@
 import { Prisma } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma.service';
 import { TokenWhitelistDto } from './dto/token-whitelist.dto';
 import { REFRESH_TOKEN_EXPIRY } from 'src/constants/constants';
 import { TokenWhiteListEntity } from './entity/token-whiteList.entity';
+import { BaseRepository } from 'src/common/base.repository';
 
 @Injectable()
-export class TokenRepository {
-  constructor(private readonly prismaService: PrismaService) {}
+export class TokenRepository extends BaseRepository {
+  constructor(protected readonly prismaService: PrismaService) {
+    super(prismaService);
+  }
 
   public createWhitelist(
     whitelistDto: TokenWhitelistDto,

@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { GroupEntity } from './entities/group.entity';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from 'src/common/prisma.service';
 import { GroupInfoEntity } from './entities/group-info.entity';
+import { BaseRepository } from 'src/common/base.repository';
 
 @Injectable()
-export class GroupRepository {
-  constructor(private readonly prisma: PrismaService) {}
+export class GroupRepository extends BaseRepository {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma);
+  }
 
   public create(
     groupDto: CreateGroupDto,
